@@ -13,7 +13,6 @@
 #
 # Not listed here because they are built in:
 #   Left stick steers the ship and thrusts when pushed past the trigger threshold.
-#   LB (9) opens the radial menu for fleet orders, deploy/recall, hail, and cloak.
 #   Right stick Y zooms the view in flight and scrolls lists in menus.
 #   In menus the left stick moves the cursor between buttons and A activates.
 #   Menus also accept the D-pad as arrow keys, B as Escape (back / close),
@@ -27,6 +26,7 @@
 "Show main menu" controller_button 6
 "Fire afterburner" controller_button 7
 "Stop your ship" controller_button 8
+"Open radial menu (hold)" controller_button 9
 "Select secondary weapon" controller_button 10
 "Deploy / recall fighters" controller_button 11
 "Scan selected ship" controller_button 12

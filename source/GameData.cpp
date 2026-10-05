@@ -230,6 +230,7 @@ void GameData::LoadSettings()
 		Command::SetControllerButton(Command::STOP, SDL_CONTROLLER_BUTTON_LEFTSTICK);
 		Command::SetControllerButton(Command::NEAREST_ASTEROID, SDL_CONTROLLER_BUTTON_RIGHTSTICK);
 		Command::SetControllerButton(Command::SELECT, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+		Command::SetControllerButton(Command::RADIAL_MENU, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
 		Command::SetControllerButton(Command::DEPLOY, SDL_CONTROLLER_BUTTON_DPAD_UP);
 		Command::SetControllerButton(Command::BOARD, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
 		Command::SetControllerButton(Command::CLOAK, SDL_CONTROLLER_BUTTON_DPAD_LEFT);

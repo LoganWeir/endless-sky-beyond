@@ -98,6 +98,7 @@ const Command Command::WAIT(ONE << 39, "");
 const Command Command::STOP(ONE << 40, "Stop your ship");
 const Command Command::SHIFT(ONE << 41, "");
 const Command Command::FLEET_FORMATION(ONE << 42, "Fleet: Toggle Formation");
+const Command Command::RADIAL_MENU(ONE << 43, "Open radial menu (hold)");
 
 std::atomic<uint64_t> Command::simulated_command{};
 std::atomic<uint64_t> Command::simulated_command_once{};

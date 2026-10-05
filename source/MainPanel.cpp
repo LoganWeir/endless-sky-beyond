@@ -337,8 +337,7 @@ bool MainPanel::ControllerTriggerPressed(SDL_GameControllerAxis axis, bool posit
 
 bool MainPanel::ControllerButtonDown(SDL_GameControllerButton button)
 {
-	// TODO: Make this configurable.
-	if(button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER)
+	if(Command::FromButton(button).Has(Command::RADIAL_MENU))
 	{
 		bool hasFleet = false;
 		bool hasFighters = false;

@@ -78,6 +78,9 @@ private:
 	void HandleUp();
 	void HandleDown();
 	void HandleConfirm();
+	// If the gamepad cursor rests on a volume bar, nudge that volume with the
+	// arrow keys. Returns true if a bar was adjusted.
+	bool AdjustVolumeAtCursor(SDL_Keycode key);
 
 	// Scroll the plugin list until the selected plugin is visible.
 	void ScrollSelectedPlugin();

@@ -932,14 +932,17 @@ bool MapPanel::ControllerTriggerPressed(SDL_GameControllerAxis axis, bool positi
 		switch(controllerFocus)
 		{
 		case FOCUS_DETAIL:
-			// TODO: handle left side content (mission list, port list, ship list, etc)
-			break;
+			// The left-hand lists (planets, outfits, ships) all move their
+			// selection with the arrow keys, so translate the stick to those.
+			if(axis == SDL_CONTROLLER_AXIS_LEFTY)
+				return KeyDown(positive ? SDLK_DOWN : SDLK_UP, 0, Command(), true);
+			return KeyDown(positive ? SDLK_RIGHT : SDLK_LEFT, 0, Command(), true);
 		case FOCUS_MAP:
 			// swallow this event. Panning is handled in the Step() function.
 			return true;
-			break;
 		case FOCUS_BUTTONS:
-			// TODO: navigate through the button panel on the bottom right
+			// Navigation through the buttons is handled by the default zone
+			// behavior once this returns false.
 			break;
 		}
 	}

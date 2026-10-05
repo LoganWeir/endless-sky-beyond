@@ -25,6 +25,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "text/FontSet.h"
 #include "text/Format.h"
 #include "GameData.h"
+#include "gamepad/GamepadCursor.h"
 #include "gamepad/GamepadPanel.h"
 #include "Information.h"
 #include "Interface.h"
@@ -221,6 +222,10 @@ void PreferencesPanel::Draw()
 	string pageName = (page == 'c' ? "controls" : page == 's' ? "settings" : page == 'p' ? "plugins" : "audio");
 	GameData::Interfaces().Get(pageName)->Draw(info, this);
 	GameData::Interfaces().Get("preferences")->Draw(info, this);
+	// The volume bars are plain interface elements, so register them as zones
+	// to let the gamepad cursor reach them. Pressing A on a bar does nothing;
+	// the arrow keys adjust it (see AdjustVolumeAtCursor).
+	AddZone(GameData::Interfaces().Get("preferences")->GetBox("volume box"), []() {});
 
 	zones.clear();
 	prefZones.clear();
@@ -239,7 +244,12 @@ void PreferencesPanel::Draw()
 		DrawPlugins();
 	else if(page == 'a')
 	{
-		// The entire audio panel is defined in interfaces, so this is a dummy.
+		// The audio panel itself is defined entirely in interfaces; only the
+		// cursor zones for its volume bars are added here.
+		const Interface *audioUI = GameData::Interfaces().Get("audio");
+		for(const auto &[name, category] : volumeBars)
+			if(category != SoundCategory::MASTER)
+				AddZone(audioUI->GetBox(name + " box"), []() {});
 	}
 }
 
@@ -268,6 +278,10 @@ bool PreferencesPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &comma
 		EndEditing();
 		return true;
 	}
+
+	if((key == SDLK_UP || key == SDLK_DOWN || key == SDLK_LEFT || key == SDLK_RIGHT)
+			&& AdjustVolumeAtCursor(key))
+		return true;
 
 	if(key == SDLK_DOWN)
 		HandleDown();
@@ -575,15 +589,9 @@ bool PreferencesPanel::ControllerButtonDown(SDL_GameControllerButton button)
 {
 	if(editing >= 0 && editing < static_cast<int>(zones.size()))
 	{
-		// TODO: provide a way to edit submenu buttons? Maybe just allow the user
-		//       to select multiple commands for a single button. For now, just
-		//       don't let the user set the shoulder buttons
-		if(button != SDL_CONTROLLER_BUTTON_LEFTSHOULDER)
-		{
-			Command::SetControllerButton(zones[editing].Value(), button);
-			controlTypeDropdown->SetText(SHOW_GAMEPAD);
-			EndEditing();
-		}
+		Command::SetControllerButton(zones[editing].Value(), button);
+		controlTypeDropdown->SetText(SHOW_GAMEPAD);
+		EndEditing();
 		return true;
 	}
 	else
@@ -705,7 +713,8 @@ void PreferencesPanel::DrawControls()
 		Command::PAUSE,
 		Command::HELP,
 		Command::MESSAGE_LOG,
-		Command::PERFORMANCE_DISPLAY
+		Command::PERFORMANCE_DISPLAY,
+		Command::RADIAL_MENU
 	};
 
 	int page = 0;
@@ -1611,6 +1620,40 @@ void PreferencesPanel::HandleSettingsString(const string &str, Point cursorPosit
 	// the remaining deadlines when it is opened in that case.
 	if(str == "Deadline blink by distance" && !player.GetPlanet())
 		recacheDeadlines = !recacheDeadlines;
+}
+
+
+
+bool PreferencesPanel::AdjustVolumeAtCursor(SDL_Keycode key)
+{
+	if(!GamepadCursor::Enabled())
+		return false;
+	const Point &cursor = GamepadCursor::Position();
+	constexpr double STEP = .05;
+
+	// The master volume bar is vertical and shown on every page.
+	const Interface *preferencesUI = GameData::Interfaces().Get("preferences");
+	if((key == SDLK_UP || key == SDLK_DOWN) && preferencesUI->GetBox("volume box").Contains(cursor))
+	{
+		double volume = Audio::Volume(SoundCategory::MASTER) + (key == SDLK_UP ? STEP : -STEP);
+		Audio::SetVolume(volume, SoundCategory::MASTER);
+		Audio::Play(Audio::Get("warder"), SoundCategory::MASTER);
+		return true;
+	}
+
+	// The per-category bars on the audio page are horizontal.
+	if(page != 'a' || (key != SDLK_LEFT && key != SDLK_RIGHT))
+		return false;
+	const Interface *audioUI = GameData::Interfaces().Get("audio");
+	for(const auto &[name, category] : volumeBars)
+		if(category != SoundCategory::MASTER && audioUI->GetBox(name + " box").Contains(cursor))
+		{
+			double volume = Audio::Volume(category) + (key == SDLK_RIGHT ? STEP : -STEP);
+			Audio::SetVolume(volume, category);
+			Audio::Play(Audio::Get("warder"), category);
+			return true;
+		}
+	return false;
 }
 
 

@@ -88,6 +88,9 @@ public:
 	static const Command HARVEST;
 	static const Command SCAN_ORDER;
 	static const Command FLEET_FORMATION;
+	// Held to open the gamepad radial menu in flight. Only meaningful when
+	// bound to a controller button.
+	static const Command RADIAL_MENU;
 	// This command is given in combination with JUMP or LAND and tells a ship
 	// not to jump or land yet even if it is in position to do so. It can be
 	// given from the AI when a ship is waiting for its parent. It can also be
