@@ -19,6 +19,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include "ClickZone.h"
 #include "Command.h"
+#include "Dropdown.h"
 #include "Point.h"
 #include "ScrollVar.h"
 #include "Tooltip.h"
@@ -53,6 +54,8 @@ protected:
 	virtual bool Hover(int x, int y) override;
 	virtual bool Scroll(double dx, double dy) override;
 	virtual bool Drag(double dx, double dy) override;
+	virtual bool ControllerTriggerPressed(SDL_GameControllerAxis axis, bool positive) override;
+	virtual bool ControllerButtonDown(SDL_GameControllerButton button) override;
 
 	virtual void Resize() override;
 
@@ -113,4 +116,6 @@ private:
 	std::unique_ptr<RenderBuffer> pluginDescriptionBuffer;
 	ScrollVar<double> pluginListScroll;
 	ScrollVar<double> pluginDescriptionScroll;
+
+	std::shared_ptr<Dropdown> controlTypeDropdown;
 };

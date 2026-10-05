@@ -107,6 +107,8 @@ protected:
 	virtual bool Hover(int x, int y) override;
 	virtual bool Drag(double dx, double dy) override;
 	virtual bool Scroll(double dx, double dy) override;
+	virtual bool ControllerTriggerPressed(SDL_GameControllerAxis axis, bool positive) override;
+	virtual bool ControllerButtonDown(SDL_GameControllerButton button) override;
 
 	// Get the color mapping for various system attributes.
 	static Color MapColor(double value);
@@ -185,6 +187,7 @@ protected:
 	// Used for panels where the map is a backdrop rather than being the main focus.
 	bool isSimplified = false;
 
+	enum {FOCUS_DETAIL, FOCUS_MAP, FOCUS_BUTTONS} controllerFocus = FOCUS_MAP;
 
 private:
 	class Node {
@@ -230,6 +233,7 @@ private:
 	void IncrementZoom();
 	void DecrementZoom();
 
+	void UpdateGamepadMapCursor();
 
 private:
 	// This is the coloring mode currently used in the cache.
@@ -237,4 +241,7 @@ private:
 
 	std::vector<Node> nodes;
 	std::vector<Link> links;
+
+	size_t controllerSelected = -1;
+	bool controllerTriggeredZoom = false;
 };

@@ -205,6 +205,7 @@ private:
 	void HandleKeyboardInputs();
 	void HandleMouseClicks();
 	void HandleMouseInput(Command &activeCommands);
+	void HandleGamepadInput(Command &activeCommands);
 
 	void FillCollisionSets();
 
@@ -222,6 +223,7 @@ private:
 	void EmplaceStatusOverlay(const std::shared_ptr<Ship> &ship, Preferences::OverlayState overlaySetting,
 		Status::Type type, double cloak);
 
+	void HandleJoystickMovement(const Point &p);
 
 private:
 	PlayerInfo &player;

@@ -15,6 +15,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "Panel.h"
 #include "Point.h"
 #include "TaskQueue.h"
 
@@ -104,11 +105,18 @@ public:
 
 	static void PlaySound(UISound sound);
 
+	std::vector<Point> ZonePositions() const;
 
 private:
 	// If a push or pop is queued, apply it.
 	void PushOrPop();
 
+	// Default behavior for game controller events
+	bool DefaultControllerTriggerPressed(SDL_GameControllerAxis axis, bool positive);
+	bool DefaultControllerTriggerReleased(SDL_GameControllerAxis axis, bool positive);
+	bool DefaultControllerButtonUp(SDL_GameControllerButton button);
+	bool DefaultControllerButtonDown(SDL_GameControllerButton button);
+	std::vector<Panel::Zone*> GetZones() const;
 
 private:
 	// Whether the player has taken actions that enable us to save the game.
@@ -125,4 +133,10 @@ private:
 	// tasks to be completed, while the async queue does not.
 	TaskQueue syncQueue;
 	TaskQueue asyncQueue;
+
+	// Track active axis value so that we can simulate button presses from
+	// triggers
+	SDL_GameControllerAxis activeAxis = SDL_CONTROLLER_AXIS_INVALID;
+	bool activeAxisIsPositive = false;
+	bool gamepadCursorIsMoving = false;
 };

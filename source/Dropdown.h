@@ -49,9 +49,15 @@ public:
 	void SetEnabled(bool e) override;
 	bool Enabled() const override { return enabled; }
 
+	// Called when the user picks an option from the dropped list, with the
+	// index and text of the chosen option. Not called for programmatic changes.
+	typedef std::function<void(int, const std::string &)> SelectedCallback;
+	void SetSelectedCallback(SelectedCallback cb) { selectedCallback = cb; }
+
 
 protected:
 	void DoDropdown(const Point &pos);
+	void UserSelected(int idx);
 
 
 private:
@@ -68,6 +74,8 @@ private:
 		virtual bool Drag(double dx, double dy) override;
 		virtual bool Release(int x, int y, MouseButton button) override;
 		virtual bool Hover(int x, int y) override;
+		virtual bool ControllerButtonDown(SDL_GameControllerButton button) override;
+		virtual bool ControllerTriggerPressed(SDL_GameControllerAxis axis, bool positive) override;
 
 	private:
 		Dropdown *dd = nullptr;
@@ -90,4 +98,6 @@ private:
 	int rightPaddingWithoutDrop = 5;
 	bool showDropIcon = true;
 	bool enabled = true;
+
+	SelectedCallback selectedCallback;
 };

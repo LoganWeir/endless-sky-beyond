@@ -135,6 +135,16 @@ bool GameWindow::Init(bool headless)
 	if(!checkSDL(SDL_Init(SDL_INIT_VIDEO)))
 		return false;
 
+	// If we end up using an EventFilter (endless mobile does this to handle
+	// events that can't be handled asynchronously on android) then the intial
+	// SDL_CONTROLLERDEVICEADDED can get swallowed by the act of setting the
+	// filter hook. If we do end up using an EventFilter, it needs to be set
+	// prior to initializing the gamecontroller subsystem.
+	if(SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		Logger::Log("Unable to initialize the game controller subsystem", Logger::Level::WARNING);
+	}
+
 	// Get details about the current display.
 #ifdef ES_USE_SDL3
 	SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();

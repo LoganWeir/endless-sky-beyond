@@ -72,6 +72,16 @@ void Dropdown::SetSelectedIndex(int idx)
 
 
 
+// Select an option on behalf of the user and notify any listener.
+void Dropdown::UserSelected(int idx)
+{
+	SetSelectedIndex(idx);
+	if(selectedCallback && selectedIndex >= 0)
+		selectedCallback(selectedIndex, Text());
+}
+
+
+
 void Dropdown::SetOptions(const vector<string> &options)
 {
 	this->options = options;
@@ -280,7 +290,7 @@ bool Dropdown::DroppedPanel::Click(int x, int y, MouseButton, int clicks)
 
 	int idx = dd->IdxFromPoint(x, y);
 	if(idx >= 0)
-		dd->SetSelectedIndex(idx);
+		dd->UserSelected(idx);
 
 	dd->RemoveChild(this);
 
@@ -311,9 +321,7 @@ bool Dropdown::DroppedPanel::Release(int x, int y, MouseButton)
 		// long click and drag.
 		int idx = dd->IdxFromPoint(x, y);
 		if(idx >= 0)
-		{
-			dd->SetSelectedIndex(idx);
-		}
+			dd->UserSelected(idx);
 		dd->RemoveChild(this);
 	}
 	return true;
@@ -324,5 +332,31 @@ bool Dropdown::DroppedPanel::Release(int x, int y, MouseButton)
 bool Dropdown::DroppedPanel::Hover(int x, int y)
 {
 	highlightIndex = dd->IdxFromPoint(x, y);
+	return true;
+}
+
+
+
+bool Dropdown::DroppedPanel::ControllerButtonDown(SDL_GameControllerButton button)
+{
+	if(button == SDL_CONTROLLER_BUTTON_A
+			&& highlightIndex >= 0 && highlightIndex < static_cast<int>(dd->options.size()))
+		dd->UserSelected(highlightIndex);
+	dd->RemoveChild(this);
+	return true;
+}
+
+
+
+bool Dropdown::DroppedPanel::ControllerTriggerPressed(SDL_GameControllerAxis axis, bool positive)
+{
+	// Only the direction matters here: move the highlight down or up the list.
+	const int count = static_cast<int>(dd->options.size());
+	if(!count)
+		return true;
+	if(highlightIndex < 0 || highlightIndex >= count)
+		highlightIndex = positive ? 0 : count - 1;
+	else
+		highlightIndex = max(0, min(count - 1, highlightIndex + (positive ? 1 : -1)));
 	return true;
 }
