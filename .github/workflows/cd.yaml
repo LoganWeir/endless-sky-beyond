@@ -1,6 +1,7 @@
 name: CD
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -181,7 +182,7 @@ jobs:
 
   cd_upload_artifacts_to_release:
     name: Upload
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
