@@ -129,6 +129,8 @@ protected:
 	// Find the center of the most recently drawn button with the given hotkey,
 	// e.g. 'b' for Buy. Used to place the gamepad cursor.
 	Point ButtonCenter(char keyCode) const;
+	// Outline the pane that gamepad input is currently directed at.
+	void DrawPaneFocus() const;
 	void CheckSelection();
 
 
@@ -196,6 +198,9 @@ protected:
 	ScrollVar<double> sidebarScroll;
 	ScrollVar<double> infobarScroll;
 	ShopPane activePane = ShopPane::Main;
+	// Whether the most recent input came from a gamepad, in which case the
+	// active pane is outlined so the player can see where the stick acts.
+	bool showPaneFocus = false;
 	char hoverButton = '\0';
 
 	ScrollBar mainScrollbar;

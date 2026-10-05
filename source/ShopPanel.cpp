@@ -185,6 +185,7 @@ void ShopPanel::Draw()
 	DrawDetailsSidebar();
 	DrawButtons();
 	DrawKey();
+	DrawPaneFocus();
 
 	// Draw the Find button. Note: buttonZones are cleared in DrawButtons.
 	const Point findCenter = Screen::BottomRight() - Point(580, 20);
@@ -539,6 +540,7 @@ bool ShopPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, boo
 
 bool ShopPanel::ControllerTriggerPressed(SDL_GameControllerAxis axis, bool positive)
 {
+	showPaneFocus = true;
 	// treat left joystick like arrow keys, right joystick like navigation keys.
 	// Fallback to the default zone-navigation behavior on the side pane.
 	if(activePane == ShopPane::Main)
@@ -622,6 +624,7 @@ bool ShopPanel::ControllerTriggerPressed(SDL_GameControllerAxis axis, bool posit
 
 bool ShopPanel::ControllerButtonDown(SDL_GameControllerButton button)
 {
+	showPaneFocus = true;
 	if(button == SDL_CONTROLLER_BUTTON_GUIDE)
 		return KeyDown(SDLK_ESCAPE, 0, Command(), true);
 	if(activePane == ShopPane::Main)
@@ -783,6 +786,8 @@ bool ShopPanel::Click(int x, int y, MouseButton button, int clicks)
 
 bool ShopPanel::Hover(int x, int y)
 {
+	// The mouse is in use, so the gamepad focus outline is just clutter.
+	showPaneFocus = false;
 	mainScrollbar.Hover(x, y);
 	infobarScrollbar.Hover(x, y);
 	sidebarScrollbar.Hover(x, y);
@@ -1573,6 +1578,35 @@ void ShopPanel::DrawButton(const string &name, const Rectangle &buttonShape, boo
 
 
 // If the selected item is no longer displayed, advance selection until we find something that is.
+void ShopPanel::DrawPaneFocus() const
+{
+	if(!showPaneFocus)
+		return;
+
+	// The three panes span the full height: the main list on the left, then
+	// the info pane, then the sidebar listing the player's ships.
+	const double height = Screen::Height();
+	Rectangle pane;
+	if(activePane == ShopPane::Sidebar)
+		pane = Rectangle::FromCorner(Point(Screen::Right() - SIDEBAR_WIDTH, Screen::Top()), Point(SIDEBAR_WIDTH, height));
+	else if(activePane == ShopPane::Info)
+		pane = Rectangle::FromCorner(Point(Screen::Right() - SIDE_WIDTH, Screen::Top()), Point(INFOBAR_WIDTH, height));
+	else
+		pane = Rectangle::FromCorner(Screen::TopLeft(), Point(Screen::Width() - SIDE_WIDTH, height));
+
+	// Draw a thin frame just inside the pane's edges.
+	constexpr double THICKNESS = 2.;
+	const Color &color = *GameData::Colors().Get("shop pane focus");
+	const Point inset(THICKNESS / 2., THICKNESS / 2.);
+	const Rectangle frame(pane.Center(), pane.Dimensions() - 2. * inset);
+	FillShader::Fill(Point(frame.Center().X(), frame.Top()), Point(frame.Width(), THICKNESS), color);
+	FillShader::Fill(Point(frame.Center().X(), frame.Bottom()), Point(frame.Width(), THICKNESS), color);
+	FillShader::Fill(Point(frame.Left(), frame.Center().Y()), Point(THICKNESS, frame.Height()), color);
+	FillShader::Fill(Point(frame.Right(), frame.Center().Y()), Point(THICKNESS, frame.Height()), color);
+}
+
+
+
 Point ShopPanel::ButtonCenter(char keyCode) const
 {
 	for(const auto &zone : buttonZones)

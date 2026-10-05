@@ -43,6 +43,7 @@ color "map jump range color" .3 .3 .3 .0
 color "shop side panel background" .2 .2 .2 1.
 color "shop side panel footer" .3 .3 .3 1.
 color "shop info panel background" .055 .055 .055 1.
+color "shop pane focus" .2 .7 1. .6
 color "tooltip background" .2 .2 .2 1.
 color "player info hardpoint gun" .5 .375 0. 1.
 color "player info hardpoint gun hover" .8 .6 0. 1.
