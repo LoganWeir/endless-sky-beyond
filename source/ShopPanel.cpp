@@ -121,11 +121,9 @@ ShopPanel::ShopPanel(PlayerInfo &player, bool isOutfitter)
 
 	AddChild(selectedQuantity);
 
-	// Default pane is main, which does its own higlighting, so disable the
-	// cursor. Set the default button though for when the side pane is set
-	// TODO: need a better way to find this.
-	const Point buyCenter = Screen::BottomRight() - Point(210, 25);
-	GamepadCursor::SetPosition(buyCenter);
+	// Default pane is main, which does its own highlighting, so disable the
+	// cursor. Set the default button though for when the side pane is set.
+	GamepadCursor::SetPosition(ButtonCenter('b'));
 	GamepadCursor::SetEnabled(false);
 }
 
@@ -562,6 +560,10 @@ bool ShopPanel::ControllerTriggerPressed(SDL_GameControllerAxis axis, bool posit
 			// do not rely on default zone-based cursor handling, as this class
 			// uses its own zones (also confusingly named "Zone")
 			std::vector<Point> options = GetUI().ZonePositions();
+			// The Buy / Sell / Leave buttons and the Find button are tracked
+			// separately from the panel's zones, so add them explicitly.
+			for(const auto &z : buttonZones)
+				options.push_back(z.Center());
 			for(auto &z : shipZones)
 			{
 				// only add zones in the right side panel that are visible on the
@@ -627,10 +629,8 @@ bool ShopPanel::ControllerButtonDown(SDL_GameControllerButton button)
 		if(button == SDL_CONTROLLER_BUTTON_A)
 		{
 			activePane = ShopPane::Sidebar;
-			// switch to the sidebar, and highlight the buy button
-			// TODO: need a better way to find this.
-			const Point buyCenter = Screen::BottomRight() - Point(210, 25);
-			GamepadCursor::SetPosition(buyCenter);
+			// Switch to the sidebar, and highlight the buy button.
+			GamepadCursor::SetPosition(ButtonCenter('b'));
 			return true;
 		}
 	}
@@ -1573,6 +1573,20 @@ void ShopPanel::DrawButton(const string &name, const Rectangle &buttonShape, boo
 
 
 // If the selected item is no longer displayed, advance selection until we find something that is.
+Point ShopPanel::ButtonCenter(char keyCode) const
+{
+	for(const auto &zone : buttonZones)
+		if(zone.Value() == keyCode)
+			return zone.Center();
+	// The buttons have not been drawn yet. Fall back to where the first button
+	// of the top row is placed by the shop panels' DrawButtons().
+	const double rowOffsetY = BUTTON_HEIGHT + BUTTON_ROW_PAD;
+	return Point(Screen::Right() - SIDEBAR_WIDTH / 2 - 1. - (BUTTON_WIDTH + BUTTON_COL_PAD),
+		Screen::Bottom() - rowOffsetY - .5 * BUTTON_HEIGHT - BUTTON_ROW_START_PAD);
+}
+
+
+
 void ShopPanel::CheckSelection()
 {
 	if((!selectedOutfit && !selectedShip) ||

@@ -126,6 +126,9 @@ protected:
 	int64_t LicenseCost(const Outfit *outfit, bool onlyOwned = false) const;
 
 	void DrawButton(const std::string &name, const Rectangle &buttonShape, bool isActive, bool hovering, char keyCode);
+	// Find the center of the most recently drawn button with the given hotkey,
+	// e.g. 'b' for Buy. Used to place the gamepad cursor.
+	Point ButtonCenter(char keyCode) const;
 	void CheckSelection();
 
 
