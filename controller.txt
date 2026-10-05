@@ -16,6 +16,8 @@
 #   LB (9) opens the radial menu for fleet orders, deploy/recall, hail, and cloak.
 #   Right stick Y zooms the view in flight and scrolls lists in menus.
 #   In menus the left stick moves the cursor between buttons and A activates.
+#   Menus also accept the D-pad as arrow keys, B as Escape (back / close),
+#   and A as Return (confirm) wherever a panel does not use them itself.
 
 "Land on planet / station" controller_button 0
 "Talk to selected ship" controller_button 1

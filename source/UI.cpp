@@ -575,6 +575,43 @@ bool UI::DefaultControllerButtonDown(SDL_GameControllerButton button)
 			}
 		}
 	}
+
+	// Console-style fallbacks for panels that have no gamepad handling of their
+	// own: the D-pad acts as the arrow keys, B as Escape, and A as Return. Any
+	// panel that wanted these buttons has already consumed them, and in flight
+	// they are normally bound to commands, so this only applies to leftovers.
+	SDL_Keycode key = SDLK_UNKNOWN;
+	switch(button)
+	{
+	case SDL_CONTROLLER_BUTTON_DPAD_UP:
+		key = SDLK_UP;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+		key = SDLK_DOWN;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+		key = SDLK_LEFT;
+		break;
+	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+		key = SDLK_RIGHT;
+		break;
+	case SDL_CONTROLLER_BUTTON_B:
+		key = SDLK_ESCAPE;
+		break;
+	case SDL_CONTROLLER_BUTTON_A:
+		key = SDLK_RETURN;
+		break;
+	default:
+		return false;
+	}
+
+	// Deliver the key to the topmost panel that is not about to be closed.
+	for(auto it = stack.rbegin(); it != stack.rend(); ++it)
+	{
+		if(count(toPop.begin(), toPop.end(), it->get()))
+			continue;
+		return (*it)->DoKeyDown(key, 0, Command(key), true);
+	}
 	return false;
 }
 
