@@ -1,0 +1,41 @@
+# Default game controller bindings, tuned for the Steam Deck and other
+# Xbox-layout gamepads. Copy this file to your config directory as
+# "controller.txt" to customize it, or rebind controls in Preferences;
+# a config-directory copy takes precedence over this one.
+#
+# Button numbers follow SDL_GameControllerButton:
+#   0 A   1 B   2 X   3 Y   4 Back/View   5 Guide (reserved by Steam)
+#   6 Start/Menu   7 L3 (left stick click)   8 R3 (right stick click)
+#   9 LB   10 RB   11 D-pad up   12 D-pad down   13 D-pad left   14 D-pad right
+#   16-19 Back paddles (Steam Deck L4/L5/R4/R5), when the OS exposes them
+# Trigger axes follow SDL_GameControllerAxis, with 1 = positive direction:
+#   2 right stick X   3 right stick Y   4 left trigger   5 right trigger
+#
+# Not listed here because they are built in:
+#   Left stick steers the ship and thrusts when pushed past the trigger threshold.
+#   LB (9) opens the radial menu for fleet orders, deploy/recall, hail, and cloak.
+#   Right stick Y zooms the view in flight and scrolls lists in menus.
+#   In menus the left stick moves the cursor between buttons and A activates.
+
+"Land on planet / station" controller_button 0
+"Talk to selected ship" controller_button 1
+"Board selected ship" controller_button 2
+"Initiate hyperspace jump" controller_button 3
+"View star map" controller_button 4
+"Show main menu" controller_button 6
+"Fire afterburner" controller_button 7
+"Stop your ship" controller_button 8
+"Select secondary weapon" controller_button 10
+"Deploy / recall fighters" controller_button 11
+"Scan selected ship" controller_button 12
+"Toggle cloaking device" controller_button 13
+"Toggle fast-forward" controller_button 14
+"View player info" controller_button 16
+"View message log" controller_button 17
+"Auto steer" controller_button 18
+"Select nearest asteroid" controller_button 19
+
+"Select next ship" controller_trigger 2 0
+"Select nearest hostile ship" controller_trigger 2 1
+"Fire secondary weapon" controller_trigger 4 1
+"Fire primary weapon" controller_trigger 5 1
