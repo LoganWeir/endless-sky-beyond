@@ -25,6 +25,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "text/Font.h"
 #include "text/FontSet.h"
 #include "GameData.h"
+#include "GameWindow.h"
 #include "MapDetailPanel.h"
 #include "PlayerInfo.h"
 #include "Point.h"
@@ -125,6 +126,8 @@ namespace {
 
 DialogPanel::~DialogPanel()
 {
+	if(AcceptsInput())
+		GameWindow::StopTextInput();
 	Audio::Resume();
 }
 
@@ -321,6 +324,10 @@ DialogPanel::DialogPanel(DialogInit &init)
 		stringFun = buttonOne.buttonAction;
 	}
 	cancelText = isMission ? "Decline" : "Cancel";
+
+	// If this dialog has an input field, text entry begins as soon as it opens.
+	if(AcceptsInput())
+		GameWindow::StartTextInput();
 
 	text = make_shared<TextArea>();
 	text->SetAlignment(Preferences::GetTextAlignment());

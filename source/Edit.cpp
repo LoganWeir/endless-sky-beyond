@@ -20,6 +20,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "text/Font.h"
 #include "text/FontSet.h"
 #include "GameData.h"
+#include "GameWindow.h"
 #include "Rectangle.h"
 #include "Screen.h"
 #include "UI.h"
@@ -385,20 +386,12 @@ bool Edit::OnFocus(bool f)
 	{
 		if(!isEditable)
 			return false;
-#ifdef ES_USE_SDL3
-		SDL_StartTextInput(SDL_GetKeyboardFocus());
-#else
-		SDL_StartTextInput();
-#endif
+		GameWindow::StartTextInput();
 		highlightPos = INVALID_POS;
 		UpdateCaret(textHistory.back().second);
 	}
 	else
-#ifdef ES_USE_SDL3
-		SDL_StopTextInput(SDL_GetKeyboardFocus());
-#else
-		SDL_StopTextInput();
-#endif
+		GameWindow::StopTextInput();
 	return true;
 }
 

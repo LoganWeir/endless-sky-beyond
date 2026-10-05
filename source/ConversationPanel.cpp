@@ -30,6 +30,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "text/FontSet.h"
 #include "text/Format.h"
 #include "GameData.h"
+#include "GameWindow.h"
 #include "Government.h"
 #include "MapDetailPanel.h"
 #include "PlayerInfo.h"
@@ -100,6 +101,8 @@ ConversationPanel::ConversationPanel(PlayerInfo &player, const Conversation &con
 
 ConversationPanel::~ConversationPanel()
 {
+	if(isEnteringName)
+		GameWindow::StopTextInput();
 	Audio::Resume();
 }
 
@@ -483,6 +486,18 @@ void ConversationPanel::Goto(int index, int selectedChoice)
 		node = Endpoint::DECLINE;
 	}
 	this->choice = 0;
+
+	// A node with no choices that did not end the conversation asks the player
+	// to type their name. Tell SDL when that text entry begins and ends.
+	bool enteringName = (node >= 0 && choices.empty());
+	if(enteringName != isEnteringName)
+	{
+		isEnteringName = enteringName;
+		if(isEnteringName)
+			GameWindow::StartTextInput();
+		else
+			GameWindow::StopTextInput();
+	}
 }
 
 

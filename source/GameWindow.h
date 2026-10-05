@@ -48,6 +48,12 @@ public:
 	static void ToggleFullscreen();
 	static void ToggleBlockScreenSaver();
 
+	// Tell SDL that a text entry field has become active or inactive. Besides
+	// enabling text input events, on the Steam Deck this asks Steam to show or
+	// hide its on-screen keyboard.
+	static void StartTextInput();
+	static void StopTextInput();
+
 	// Print the error message in the terminal, error file, and message box.
 	// Checks for video system errors and records those as well.
 	static void ExitWithError(const std::string &message, bool doPopUp = true);

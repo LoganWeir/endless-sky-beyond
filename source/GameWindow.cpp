@@ -529,6 +529,32 @@ void GameWindow::ToggleBlockScreenSaver()
 
 
 
+void GameWindow::StartTextInput()
+{
+	if(!mainWindow)
+		return;
+#ifdef ES_USE_SDL3
+	SDL_StartTextInput(mainWindow);
+#else
+	SDL_StartTextInput();
+#endif
+}
+
+
+
+void GameWindow::StopTextInput()
+{
+	if(!mainWindow)
+		return;
+#ifdef ES_USE_SDL3
+	SDL_StopTextInput(mainWindow);
+#else
+	SDL_StopTextInput();
+#endif
+}
+
+
+
 void GameWindow::ExitWithError(const string &message, bool doPopUp)
 {
 	// Print the error message in the terminal and the error file.

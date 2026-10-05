@@ -140,6 +140,8 @@ private:
 	int choice = 0;
 	// Flicker time, set if the player enters invalid input for a pilot's name.
 	int flickerTime = 0;
+	// Whether the player is currently being asked to type their name.
+	bool isEnteringName = false;
 
 	// Text entry fields for changing the player's name.
 	std::string firstName;
