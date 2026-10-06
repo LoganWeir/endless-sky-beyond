@@ -21,6 +21,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "shader/FillShader.h"
 #include "text/Format.h"
 #include "GameData.h"
+#include "gamepad/GamePad.h"
 #include "Point.h"
 #include "Preferences.h"
 #include "Screen.h"
@@ -670,6 +671,13 @@ int Panel::Modifier()
 		modifier *= 20;
 	if(mod & KMOD_SHIFT)
 		modifier *= 5;
+
+	// On a gamepad, the right trigger stands in for Shift and the left trigger
+	// for Ctrl, so holding both multiplies by 100.
+	if(GamePad::Trigger(SDL_CONTROLLER_AXIS_TRIGGERRIGHT, true))
+		modifier *= 5;
+	if(GamePad::Trigger(SDL_CONTROLLER_AXIS_TRIGGERLEFT, true))
+		modifier *= 20;
 
 	return modifier;
 }

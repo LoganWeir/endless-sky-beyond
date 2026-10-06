@@ -23,6 +23,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "text/FontSet.h"
 #include "text/Format.h"
 #include "GameData.h"
+#include "gamepad/GamepadCursor.h"
 #include "Information.h"
 #include "Interface.h"
 #include "MapDetailPanel.h"
@@ -31,6 +32,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Planet.h"
 #include "PlayerInfo.h"
 #include "Preferences.h"
+#include "Rectangle.h"
 #include "Screen.h"
 #include "System.h"
 #include "UI.h"
@@ -179,6 +181,15 @@ void TradingPanel::Draw()
 
 			font.Draw("[buy]", Point(minX + buyX, y), color);
 			font.Draw("[sell]", Point(minX + sellX, y), color);
+
+			// Register the buy and sell columns as zones so the gamepad cursor
+			// can land on them. The mouse reaches the same code through Click().
+			const int row = i - 1;
+			const double rowTop = firstY + 25 + 20 * row;
+			AddZone(Rectangle::FromCorner(Point(minX + buyX, rowTop), Point(sellX - buyX, 20.)),
+				[this, row]() { player.SetMapColoring(row); Buy(1); });
+			AddZone(Rectangle::FromCorner(Point(minX + sellX, rowTop), Point(holdX - sellX, 20.)),
+				[this, row]() { player.SetMapColoring(row); Buy(-1); });
 		}
 		else
 		{
@@ -262,6 +273,30 @@ bool TradingPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, 
 	}
 	else if(command.Has(Command::MAP))
 		GetUI().Push(new MapDetailPanel(player));
+	else
+		return false;
+
+	return true;
+}
+
+
+
+// D-pad up and down pick a commodity. While a commodity is picked (the cursor is
+// hidden), A buys and B sells it. Once the left stick has brought the cursor
+// back, A and B fall through to the usual click and back behavior.
+bool TradingPanel::ControllerButtonDown(SDL_GameControllerButton button)
+{
+	if(button == SDL_CONTROLLER_BUTTON_DPAD_UP || button == SDL_CONTROLLER_BUTTON_DPAD_DOWN)
+	{
+		GamepadCursor::SetEnabled(false);
+		return KeyDown(button == SDL_CONTROLLER_BUTTON_DPAD_UP ? SDLK_UP : SDLK_DOWN, 0, Command(), true);
+	}
+	if(GamepadCursor::Enabled())
+		return false;
+	if(button == SDL_CONTROLLER_BUTTON_A)
+		Buy(1);
+	else if(button == SDL_CONTROLLER_BUTTON_B)
+		Buy(-1);
 	else
 		return false;
 

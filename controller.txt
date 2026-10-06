@@ -17,6 +17,9 @@
 #   In menus the left stick moves the cursor between buttons and A activates.
 #   Menus also accept the D-pad as arrow keys, B as Escape (back / close),
 #   and A as Return (confirm) wherever a panel does not use them itself.
+#   Buying and selling: hold the right trigger for x5 (like Shift), the left
+#   trigger for x20 (like Ctrl), or both for x100. On the trading board, the
+#   D-pad picks a commodity, then A buys it and B sells it.
 
 "Land on planet / station" controller_button 0
 "Talk to selected ship" controller_button 1
