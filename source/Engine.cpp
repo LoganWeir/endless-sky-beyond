@@ -66,6 +66,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "image/SpriteSet.h"
 #include "shader/SpriteShader.h"
 #include "shader/StarField.h"
+#include "StatLog.h"
 #include "StellarObject.h"
 #include "System.h"
 #include "SystemEntry.h"
@@ -1814,8 +1815,19 @@ void Engine::CalculateUnpaused(const Ship *flagship, const System *playerSystem)
 			flagship->IsUsingJumpDrive() ? SystemEntry::JUMP :
 			SystemEntry::HYPERDRIVE);
 		doFlash = Preferences::Has("Show hyperspace flash");
+		const System *previousSystem = playerSystem;
 		playerSystem = flagship->GetSystem();
+		const bool isFirstVisit = !player.HasVisited(*playerSystem);
 		player.SetSystem(*playerSystem);
+
+		const char *method = wormholeEntry ? "wormhole" : flagship->IsUsingJumpDrive() ? "jump drive" : "hyperdrive";
+		if(isFirstVisit)
+			player.AddStat("systems discovered");
+		player.AddStat("jump method", method);
+		player.RecordStat("jumped", playerSystem->TrueName(), 1, StatLog::Entry()
+			.Add("from", previousSystem ? previousSystem->TrueName() : "")
+			.Add("method", method)
+			.Add("first visit", isFirstVisit ? 1 : 0));
 		EnterSystem();
 	}
 	PrunePointers(ships);
@@ -2780,6 +2792,18 @@ void Engine::DoCollection(Flotsam &flotsam)
 	// If the collector is not one of the player's ships, we can bail out now.
 	if(!collector->IsYours())
 		return;
+
+	// Record what the player's fleet collects.
+	if(amount > 0)
+	{
+		const Outfit *collected = flotsam.OutfitType();
+		if(!collected)
+			player.RecordStat("collected commodity", flotsam.CommodityType(), amount);
+		else if(collected->Get("minable") > 0.)
+			player.RecordStat("harvested", collected->TrueName(), amount);
+		else
+			player.RecordStat("collected outfit", collected->TrueName(), amount);
+	}
 
 	if(!collectorIsFlagship && !Preferences::Has("Extra fleet status messages"))
 		return;

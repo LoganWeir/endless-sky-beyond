@@ -336,6 +336,8 @@ target_sources(EndlessSkyLib PRIVATE
 	StartConditions.h
 	StartConditionsPanel.cpp
 	StartConditionsPanel.h
+	StatLog.cpp
+	StatLog.h
 	StellarObject.cpp
 	StellarObject.h
 	StellarObjectSpriteData.cpp

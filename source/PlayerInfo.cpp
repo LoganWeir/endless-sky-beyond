@@ -57,6 +57,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <functional>
@@ -815,6 +816,7 @@ void PlayerInfo::AddEvent(GameEvent event, const Date &date)
 void PlayerInfo::Die(int response, const shared_ptr<Ship> &capturer)
 {
 	isDead = true;
+	RecordStat("died", (capturer && capturer->GetGovernment()) ? capturer->GetGovernment()->TrueName() : "");
 	ApplyPermadeath();
 	// The player loses access to all their ships if they die on a planet.
 	if(GetPlanet() || !flagship)
@@ -946,6 +948,14 @@ void PlayerInfo::AdvanceDate(int amount)
 				mission.Do(Mission::DAILY, *this);
 		}
 		DoAccounting();
+
+		// Daily statistics.
+		RecordExtremes("credits", accounts.Credits());
+		RecordExtremes("net worth", accounts.NetWorth());
+		if(accounts.CrewSalariesOwed() || accounts.MaintenanceDue())
+			AddStat("days unable to pay bills");
+		LogStat("daily", "", 1, StatLog::Entry().Add("credits", accounts.Credits())
+			.Add("net worth", accounts.NetWorth()));
 	}
 	// Reset the reload counters for all your ships.
 	for(const shared_ptr<Ship> &ship : ships)
@@ -1342,6 +1352,9 @@ bool PlayerInfo::BuyShip(const Ship *model, const string &name)
 
 	accounts.AddCredits(-cost);
 	flagship.reset();
+	RecordStat("ship bought", model->TrueModelName(), 1, StatLog::Entry().Add("credits", cost)
+		.Add("category", model->BaseAttributes().Category()));
+	AddStat("ship bought category", model->BaseAttributes().Category());
 
 	depreciation.Buy(*model, day, &stockDepreciation);
 	for(const auto &[outfit, count] : model->Outfits())
@@ -1404,6 +1417,8 @@ void PlayerInfo::SellShip(const Ship *selected, bool storeOutfits)
 			}
 
 			accounts.AddCredits(cost);
+			RecordStat("ship sold", selected->TrueModelName(), 1, StatLog::Entry().Add("credits", cost)
+				.Add("category", selected->BaseAttributes().Category()));
 			ForgetGiftedShip(*it->get());
 			ships.erase(it);
 			flagship.reset();
@@ -1728,6 +1743,21 @@ void PlayerInfo::Land(UI &ui)
 		Audio::Play(Audio::Get("landing"), SoundCategory::ENGINE);
 	}
 	Audio::PlayMusic(planet->MusicName());
+
+	if(!freshlyLoaded)
+	{
+		int today = date.DaysSinceEpoch();
+		if(conditions.Get("stat: last landed"))
+			RecordExtremes("days between landings", today - conditions.Get("stat: last landed"));
+		conditions.Set("stat: last landed", today);
+		bool isFirstVisit = !HasVisited(*planet);
+		if(isFirstVisit)
+			AddStat("planets discovered");
+		if(!planet->IsInhabited())
+			AddStat("landed uninhabited", planet->TrueName());
+		RecordStat("landed", planet->TrueName(), 1, StatLog::Entry().Add("first visit", isFirstVisit ? 1 : 0)
+			.Add("inhabited", planet->IsInhabited() ? 1 : 0));
+	}
 
 	// Mark this planet as visited.
 	Visit(*planet);
@@ -2102,6 +2132,9 @@ bool PlayerInfo::TakeOff(UI &ui, const bool distributeCargo)
 	CalculateScanners();
 
 	this->previousPlanet = planet;
+	RecordStat("took off", flagship->TrueModelName(), 1, StatLog::Entry()
+		.Add("category", flagship->BaseAttributes().Category())
+		.Add("fleet size", static_cast<int>(ships.size())));
 	return true;
 }
 
@@ -2165,6 +2198,59 @@ double PlayerInfo::GetPlayTime() const noexcept
 void PlayerInfo::AddPlayTime(chrono::nanoseconds timeVal)
 {
 	playTime += timeVal.count() * .000000001;
+}
+
+
+
+void PlayerInfo::AddStat(const string &verb, const string &object, int64_t amount)
+{
+	conditions["stat: " + verb] += amount;
+	if(!object.empty())
+		conditions["stat: " + verb + ": " + object] += amount;
+}
+
+
+
+void PlayerInfo::LogStat(const string &verb, const string &object, int64_t amount, const StatLog::Entry &extra) const
+{
+	StatLog::Entry entry;
+	entry.Add("pilot", firstName + " " + lastName)
+		.Add("day", date.DaysSinceEpoch())
+		.Add("date", date.ToString());
+	if(system)
+		entry.Add("system", system->TrueName());
+	if(planet)
+		entry.Add("planet", planet->TrueName());
+	entry.Add("verb", verb);
+	if(!object.empty())
+		entry.Add("object", object);
+	entry.Add("amount", amount).Append(extra);
+	StatLog::Write(entry);
+}
+
+
+
+void PlayerInfo::RecordStat(const string &verb, const string &object, int64_t amount, const StatLog::Entry &extra)
+{
+	AddStat(verb, object, amount);
+	LogStat(verb, object, amount, extra);
+}
+
+
+
+void PlayerInfo::RecordExtremes(const string &name, int64_t value)
+{
+	// Conditions that are 0 are not saved, so a separate flag records whether
+	// any value has been seen yet.
+	const string seen = "stat: tracked: " + name;
+	const string peak = "stat: peak: " + name;
+	const string low = "stat: low: " + name;
+	bool isFirst = !conditions.Get(seen);
+	if(isFirst || value > conditions.Get(peak))
+		conditions.Set(peak, value);
+	if(isFirst || value < conditions.Get(low))
+		conditions.Set(low, value);
+	conditions.Set(seen, 1);
 }
 
 
@@ -2886,6 +2972,8 @@ void PlayerInfo::FailMission(const Mission &mission)
 // Update mission status based on an event.
 void PlayerInfo::HandleEvent(const ShipEvent &event, UI &ui)
 {
+	RecordShipEvent(event);
+
 	// Combat rating increases when you disable an enemy ship.
 	if(event.ActorGovernment() && event.ActorGovernment()->IsPlayer())
 		if((event.Type() & ShipEvent::DISABLE) && event.Target() && !event.Target()->IsYours())
@@ -2906,6 +2994,59 @@ void PlayerInfo::HandleEvent(const ShipEvent &event, UI &ui)
 	// Currently, only capture events can have any effect on person ships.
 	if(event.Type() & ShipEvent::CAPTURE)
 		GameData::HandleEvent(event);
+}
+
+
+
+// Record statistics for ship events that involve the player's fleet.
+void PlayerInfo::RecordShipEvent(const ShipEvent &event)
+{
+	static const vector<pair<int, string>> VERBS = {
+		{ShipEvent::DESTROY, "destroyed"},
+		{ShipEvent::DISABLE, "disabled"},
+		{ShipEvent::BOARD, "boarded"},
+		{ShipEvent::CAPTURE, "captured"},
+		{ShipEvent::ASSIST, "assisted"},
+		{ShipEvent::PROVOKE, "provoked"},
+		{ShipEvent::ATROCITY, "atrocity"},
+		{ShipEvent::SCAN_CARGO, "scanned cargo"},
+		{ShipEvent::SCAN_OUTFITS, "scanned outfits"},
+	};
+
+	const shared_ptr<Ship> &target = event.Target();
+	if(!target)
+		return;
+	const Government *actor = event.ActorGovernment();
+	const bool byPlayer = actor && actor->IsPlayer();
+	const string &category = target->BaseAttributes().Category();
+
+	if(byPlayer && !target->IsYours())
+	{
+		// Something the player's fleet did to another ship.
+		const string government = target->GetGovernment() ? target->GetGovernment()->TrueName() : "";
+		for(const auto &[type, verb] : VERBS)
+			if(event.Type() & type)
+			{
+				RecordStat(verb, government, 1, StatLog::Entry().Add("category", category)
+					.Add("model", target->TrueModelName()));
+				AddStat(verb + " category", category);
+			}
+	}
+	else if(!byPlayer && target->IsYours())
+	{
+		// Something another ship did to the player's fleet.
+		const string by = actor ? actor->TrueName() : "";
+		const string who = (target.get() == Flagship()) ? "flagship" : "escort";
+		const StatLog::Entry extra = StatLog::Entry().Add("category", category).Add("model", target->TrueModelName());
+		if(event.Type() & ShipEvent::DESTROY)
+			RecordStat(who + " destroyed", by, 1, extra);
+		if(event.Type() & ShipEvent::DISABLE)
+			RecordStat(who + " disabled", by, 1, extra);
+		if(event.Type() & ShipEvent::CAPTURE)
+			RecordStat(who + " captured", by, 1, extra);
+		if(event.Type() & ShipEvent::BOARD)
+			RecordStat(who + " boarded", by, 1, extra);
+	}
 }
 
 
@@ -3606,6 +3747,13 @@ int PlayerInfo::Stock(const Outfit *outfit) const
 // Transfer outfits from the player to the planet or vice versa.
 void PlayerInfo::AddStock(const Outfit *outfit, int count)
 {
+	// Stock goes down when the player buys an outfit and up when they sell one.
+	if(outfit && count)
+	{
+		const char *verb = count < 0 ? "outfit bought" : "outfit sold";
+		RecordStat(verb, outfit->TrueName(), abs(count), StatLog::Entry().Add("category", outfit->Category()));
+		AddStat(string(verb) + " category", outfit->Category(), abs(count));
+	}
 	// If you sell an individual outfit that is not sold here and that you
 	// acquired by buying a ship here, have it appear as "in stock" in case you
 	// change your mind about selling it. (On the other hand, if you sell an

@@ -32,6 +32,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Random.h"
 #include "Ship.h"
 #include "ShipEvent.h"
+#include "StatLog.h"
 #include "System.h"
 #include "UI.h"
 
@@ -42,6 +43,35 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 using namespace std;
 
 namespace {
+	// A short name for where a mission is offered, used in play statistics.
+	string LocationName(Mission::Location location)
+	{
+		switch(location)
+		{
+			case Mission::SPACEPORT:
+				return "spaceport";
+			case Mission::LANDING:
+				return "landing";
+			case Mission::JOB:
+				return "job";
+			case Mission::ASSISTING:
+				return "assisting";
+			case Mission::BOARDING:
+				return "boarding";
+			case Mission::SHIPYARD:
+				return "shipyard";
+			case Mission::OUTFITTER:
+				return "outfitter";
+			case Mission::JOB_BOARD:
+				return "job board";
+			case Mission::ENTERING:
+				return "entering";
+			case Mission::TRANSITION:
+				return "transition";
+		}
+		return "unknown";
+	}
+
 	// Pick a random commodity that would make sense to be exported from the
 	// first system to the second.
 	const Trade::Commodity *PickCommodity(const System &from, const System &to)
@@ -1293,6 +1323,13 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 	if(trigger == ABORT && it == actions.end())
 		it = actions.find(FAIL);
 
+	// Record play statistics for the mission's lifecycle, keyed by where the
+	// mission was offered. Per-mission counts are kept in the conditions below.
+	auto recordStat = [this, &player](const string &verb)
+	{
+		player.RecordStat(verb, LocationName(location), 1, StatLog::Entry().Add("mission", trueName));
+	};
+
 	// Fail and abort conditions get updated regardless of whether the action
 	// can be done, as a fail or abort action not being able to be done does
 	// not prevent a mission from being failed or aborted.
@@ -1300,6 +1337,7 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 	{
 		--player.Conditions()[trueName + ": active"];
 		++player.Conditions()[trueName + ": failed"];
+		recordStat("mission failed");
 	}
 	else if(trigger == ABORT)
 	{
@@ -1308,6 +1346,7 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 		// Set the failed mission condition here as well for
 		// backwards compatibility.
 		++player.Conditions()[trueName + ": failed"];
+		recordStat("mission aborted");
 	}
 
 	// Don't update any further conditions if this action exists and can't be completed.
@@ -1318,6 +1357,7 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 	{
 		++player.Conditions()[trueName + ": offered"];
 		++player.Conditions()[trueName + ": active"];
+		recordStat("mission accepted");
 		// Any potential on offer conversation has been finished, so update
 		// the active NPCs for the first time and cache any necessary information.
 		UpdateNPCs(player);
@@ -1328,12 +1368,24 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 	{
 		++player.Conditions()[trueName + ": offered"];
 		++player.Conditions()[trueName + ": declined"];
+		recordStat("mission declined");
 	}
+	else if(trigger == DEFER)
+		recordStat("mission deferred");
 	else if(trigger == COMPLETE)
 	{
 		--player.Conditions()[trueName + ": active"];
 		++player.Conditions()[trueName + ": done"];
+		recordStat("mission completed");
+		if(passengers)
+			player.AddStat("passengers delivered", "", passengers);
+		if(cargoSize)
+			player.AddStat("mission cargo delivered", "", cargoSize);
 	}
+	// Job board missions are "offered" every time they are listed, so only
+	// count offers from other locations.
+	else if(trigger == OFFER && location != JOB)
+		recordStat("mission offered");
 
 	// "Jobs" should never show dialogs when offered, nor should they call the
 	// player's mission callback.

@@ -28,6 +28,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "GameEvent.h"
 #include "Minable.h"
 #include "Mission.h"
+#include "StatLog.h"
 #include "SystemEntry.h"
 
 #include <chrono>
@@ -231,6 +232,19 @@ public:
 	// Get or add to pilot's playtime.
 	double GetPlayTime() const noexcept;
 	void AddPlayTime(std::chrono::nanoseconds timeVal);
+
+	// Play statistics. AddStat adds the amount to the "stat: <verb>" condition
+	// and, if an object is given, to "stat: <verb>: <object>". LogStat appends
+	// the event, with the date and location, to the play log; extra fields are
+	// written only to the log. RecordStat does both.
+	void AddStat(const std::string &verb, const std::string &object = "", int64_t amount = 1);
+	void LogStat(const std::string &verb, const std::string &object = "", int64_t amount = 1,
+		const StatLog::Entry &extra = {}) const;
+	void RecordStat(const std::string &verb, const std::string &object = "", int64_t amount = 1,
+		const StatLog::Entry &extra = {});
+	// Track the highest and lowest values ever seen for the given name, in the
+	// "stat: peak: <name>" and "stat: low: <name>" conditions.
+	void RecordExtremes(const std::string &name, int64_t value);
 
 	// Get the player's logbook.
 	const std::map<Date, BookEntry> &Logbook() const;
@@ -450,6 +464,9 @@ private:
 
 	// Check for and apply any punitive actions from planetary security.
 	void Fine(UI &ui);
+
+	// Record statistics for ship events that involve the player's fleet.
+	void RecordShipEvent(const ShipEvent &event);
 
 	// Set the flagship (on departure or during flight).
 	void SetFlagship(Ship &other);

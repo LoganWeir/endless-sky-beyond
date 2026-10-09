@@ -23,6 +23,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Random.h"
 #include "Ship.h"
 #include "ShipEvent.h"
+#include "StatLog.h"
 
 #include <algorithm>
 #include <cmath>
@@ -380,6 +381,7 @@ pair<const Conversation *, string> Politics::Fine(PlayerInfo &player,
 	if(maxFine < 0)
 	{
 		gov->Offend(ShipEvent::ATROCITY);
+		player.RecordStat("condemned", gov->TrueName());
 		if(!scan)
 		{
 			reason = "atrocity";
@@ -398,6 +400,8 @@ pair<const Conversation *, string> Politics::Fine(PlayerInfo &player,
 		reason = "The " + gov->DisplayName() + " authorities fine you "
 			+ Format::CreditString(maxFine) + reason;
 		player.Accounts().AddFine(maxFine);
+		player.RecordStat("fined", gov->TrueName(), 1, StatLog::Entry().Add("credits", maxFine));
+		player.AddStat("fine credits", gov->TrueName(), maxFine);
 		fined.insert(gov);
 	}
 	return {deathSentence, reason};

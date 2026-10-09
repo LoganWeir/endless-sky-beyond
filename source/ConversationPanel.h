@@ -78,6 +78,8 @@ private:
 	// Handle mouse click on the "ok," "done," or a conversation choice.
 	void ClickName(int side);
 	void ClickChoice(int index);
+	// Record the player's choice in their play statistics.
+	void RecordChoice(int rawIndex);
 	// Given an index into the list of displayed choices (i.e. not including
 	// conditionally-skipped choices), return its "raw index" in the
 	// conversation (i.e. including conditionally-skipped choices)

@@ -33,6 +33,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "GameWindow.h"
 #include "Government.h"
 #include "MapDetailPanel.h"
+#include "Mission.h"
 #include "PlayerInfo.h"
 #include "Point.h"
 #include "Preferences.h"
@@ -43,6 +44,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "image/SpriteLoadManager.h"
 #include "image/SpriteSet.h"
 #include "shader/SpriteShader.h"
+#include "StatLog.h"
 #include "UI.h"
 
 #include <array>
@@ -405,6 +407,17 @@ bool ConversationPanel::Hover(int x, int y)
 
 
 // The player just selected the given choice.
+// Record which choice the player made, so that conversations can be analyzed
+// later. The raw choice text is logged, before any substitutions.
+void ConversationPanel::RecordChoice(int rawIndex)
+{
+	StatLog::Entry extra;
+	extra.Add("node", node).Add("choice", rawIndex).Add("text", conversation.Text(node, rawIndex));
+	player.RecordStat("conversation choice", caller ? caller->TrueName() : "", 1, extra);
+}
+
+
+
 void ConversationPanel::Goto(int index, int selectedChoice)
 {
 	const ConditionsStore &conditions = player.Conditions();
@@ -417,7 +430,11 @@ void ConversationPanel::Goto(int index, int selectedChoice)
 	{
 		// Add the chosen option to the text.
 		if(selectedChoice >= 0 && selectedChoice < static_cast<int>(choices.size()))
-			text.emplace_back(next(choices.begin(), selectedChoice)->first);
+		{
+			const auto &chosen = *next(choices.begin(), selectedChoice);
+			text.emplace_back(chosen.first);
+			RecordChoice(chosen.second);
+		}
 
 		// Scroll to the start of the new text, unless the conversation ended.
 		if(index >= 0)

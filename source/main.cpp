@@ -39,6 +39,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Panel.h"
 #include "PilotProfile.h"
 #include "PlayerInfo.h"
+#include "Plugin.h"
 #include "PluginManager.h"
 #include "Preferences.h"
 #include "PrintData.h"
@@ -46,6 +47,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Screen.h"
 #include "image/SpriteSet.h"
 #include "shader/SpriteShader.h"
+#include "StatLog.h"
 #include "TaskQueue.h"
 #include "test/Test.h"
 #include "test/TestContext.h"
@@ -327,6 +329,19 @@ void GameLoop(PlayerInfo &player, TaskQueue &queue, const Conversation &conversa
 	TestContext testContext;
 	if(!testToRunName.empty())
 		testContext = TestContext(GameData::Tests().Get(testToRunName));
+
+	// Don't record play statistics for automated tests.
+	if(!testToRunName.empty())
+		StatLog::SetPath({});
+	else
+	{
+		// Record the start of this play session and which plugins are enabled.
+		StatLog::Entry plugins;
+		for(const auto &it : PluginManager::Get())
+			if(it.second.IsValid() && it.second.enabled)
+				plugins.Add(it.second.name, it.second.version);
+		StatLog::Write(StatLog::Entry().Add("verb", "game started").AddRaw("plugins", plugins.ToString()));
+	}
 
 	const bool isHeadless = (testContext.CurrentTest() && !debugMode);
 
@@ -678,6 +693,8 @@ void GameLoop(PlayerInfo &player, TaskQueue &queue, const Conversation &conversa
 	// If player quit while landed on a planet, save the game if there are changes.
 	if(player.GetPlanet() && gamePanels.CanSave())
 		player.Save();
+
+	player.LogStat("game quit", "", 1, StatLog::Entry().Add("play time", static_cast<int64_t>(player.GetPlayTime())));
 }
 
 

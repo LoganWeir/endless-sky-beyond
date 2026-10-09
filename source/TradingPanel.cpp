@@ -34,6 +34,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Preferences.h"
 #include "Rectangle.h"
 #include "Screen.h"
+#include "StatLog.h"
 #include "System.h"
 #include "UI.h"
 
@@ -54,6 +55,38 @@ namespace {
 	};
 
 	constexpr size_t SELL_OUTFITS_DISPLAY_LIMIT = 15;
+
+	// Record a commodity trade in the player's statistics. Positive tons were
+	// bought and negative tons were sold; profit only applies to sales.
+	void RecordTrade(PlayerInfo &player, const string &commodity, int64_t tons, int64_t price, int64_t profit)
+	{
+		if(!tons)
+			return;
+
+		if(!player.Conditions().Get("stat: commodity bought: " + commodity)
+				&& !player.Conditions().Get("stat: commodity sold: " + commodity))
+			player.AddStat("commodities traded");
+		if(player.GetPlanet())
+			player.AddStat("traded at", player.GetPlanet()->TrueName());
+
+		StatLog::Entry extra;
+		extra.Add("price", price);
+		if(tons > 0)
+		{
+			player.RecordStat("commodity bought", commodity, tons, extra.Add("credits", tons * price));
+			player.AddStat("commodity spent", commodity, tons * price);
+		}
+		else
+		{
+			player.RecordStat("commodity sold", commodity, -tons, extra.Add("credits", -tons * price)
+				.Add("profit", profit));
+			player.AddStat("commodity earned", commodity, -tons * price);
+			player.AddStat("trade profit", commodity, profit);
+			if(profit < 0)
+				player.AddStat("sold at a loss", commodity);
+			player.RecordExtremes("trade profit", profit);
+		}
+	}
 }
 
 
@@ -257,6 +290,7 @@ bool TradingPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, 
 			GameData::AddPurchase(system, commodity, -amount);
 			player.AdjustBasis(commodity, basis);
 			player.Accounts().AddCredits(amount * price);
+			RecordTrade(player, commodity, -amount, price, amount * price + basis);
 			player.Cargo().Remove(commodity, amount);
 		}
 	}
@@ -354,6 +388,7 @@ void TradingPanel::Buy(int64_t amount)
 	if(!price)
 		return;
 
+	int64_t saleProfit = 0;
 	if(amount > 0)
 	{
 		amount = min(amount, min<int64_t>(player.Cargo().Free(), player.Accounts().Credits() / price));
@@ -366,12 +401,14 @@ void TradingPanel::Buy(int64_t amount)
 
 		int64_t basis = player.GetBasis(type, amount);
 		player.AdjustBasis(type, basis);
-		profit += -amount * price + basis;
+		saleProfit = -amount * price + basis;
+		profit += saleProfit;
 		tonsSold += -amount;
 	}
 	amount = player.Cargo().Add(type, amount);
 	player.Accounts().AddCredits(-amount * price);
 	GameData::AddPurchase(system, type, amount);
+	RecordTrade(player, type, amount, price, saleProfit);
 }
 
 
