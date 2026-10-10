@@ -56,7 +56,7 @@ The goal is flexibility: the data should feed features nobody has thought of yet
 
 1. it reflects a choice the player made or something that happened to them,
 2. it's cheap to count at the moment it happens, and
-3. a mission writer could plausibly say "if X, then…" about it.
+3. a mission writer could plausibly say "if X, then..." about it.
 
 Use a few generic counters keyed by a small set of dimensions, rather than many bespoke variables:
 
