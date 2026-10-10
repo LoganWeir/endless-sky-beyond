@@ -13,7 +13,7 @@
 
 # The Stranger: a recurring figure in grey who finds the player in spaceports,
 # asks one question per meeting, and slowly admits to watching them. The five
-# meetings happen in order, at least 30 days apart. The fifth one asks what the
+# meetings happen in order, at least 10 days apart. The fifth one asks what the
 # player wants from whoever is reshaping the galaxy around them.
 #
 # Each meeting can be forced for testing by setting "eesky: debug: force stranger".
@@ -28,9 +28,9 @@ mission "eesky: Stranger 1"
 		or
 			has "eesky: debug: force stranger"
 			and
-				random < 2
-				"days since start" >= 14
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 15
+				"days since start" >= 3
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -94,9 +94,9 @@ mission "eesky: Stranger 2"
 		or
 			has "eesky: debug: force stranger"
 			and
-				random < 3
-				"days since epoch" - "eesky: stranger: last" >= 30
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 15
+				"days since epoch" - "eesky: stranger: last" >= 10
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -192,9 +192,9 @@ mission "eesky: Stranger 3"
 		or
 			has "eesky: debug: force stranger"
 			and
-				random < 3
-				"days since epoch" - "eesky: stranger: last" >= 30
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 15
+				"days since epoch" - "eesky: stranger: last" >= 10
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -258,9 +258,9 @@ mission "eesky: Stranger 4"
 		or
 			has "eesky: debug: force stranger"
 			and
-				random < 3
-				"days since epoch" - "eesky: stranger: last" >= 30
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 15
+				"days since epoch" - "eesky: stranger: last" >= 10
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -323,9 +323,9 @@ mission "eesky: Stranger 5"
 		or
 			has "eesky: debug: force stranger"
 			and
-				random < 3
-				"days since epoch" - "eesky: stranger: last" >= 30
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 15
+				"days since epoch" - "eesky: stranger: last" >= 10
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -401,9 +401,9 @@ mission "eesky: The Grey Ship"
 			has "eesky: debug: force grey ship"
 			and
 				has "eesky: Stranger 2: offered"
-				random < 5
-				"days since epoch" - "eesky: stranger: last" >= 20
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 20
+				"days since epoch" - "eesky: stranger: last" >= 7
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"

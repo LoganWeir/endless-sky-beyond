@@ -46,7 +46,7 @@ Every plugin here, hand-written or generated, follows these rules so that its co
 
 - **Record the exact answer** as `eesky: answer: <encounter>` = the choice number (1-based), in addition to any trait changes. The stats log also records the choice text.
 - **Record wants** that the player states outright as `eesky: wants: <thing>` (for example `danger`, `wealth`, `discovery`, `belonging`, `peace`, `challenge`, `strangeness`, `meaning`, `autonomy`). These are the most direct signal for what to generate next.
-- **Rate-limit encounters.** Every philosopher encounter sets `eesky: philosopher: last` to `"days since epoch"` and requires at least 7 days since the last one, so they never pile up.
+- **Rate-limit encounters.** Every philosopher encounter sets `eesky: philosopher: last` to `"days since epoch"` and requires at least 3 days since the last one, so they never pile up.
 - **Use `non-blocking`, not `minor`,** for rare spaceport encounters. A `minor` mission is dropped whenever any other mission is offered at the same spaceport, so it would almost never appear at busy ports.
 - **Provide a debug switch.** Each encounter's `to offer` accepts `has "eesky: debug: force <id>"` as an alternative to its random chance and cooldowns, and clears it in `on offer`. Integration tests use this to trigger content on demand.
 - **Additive only.** Never delete or rename a mission that might be in someone's save. Retire content by making its `to offer` impossible.

@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
-# The beggar: the one encounter with real stakes. It repeats (at most every 45
+# The beggar: the one encounter with real stakes. It repeats (at most every 20
 # days), and the amount asked for scales with how much money the player has.
 # Records how often the player gives and how much in total.
 #
@@ -28,10 +28,10 @@ mission "eesky: beggar"
 		or
 			has "eesky: debug: force beggar"
 			and
-				random < 3
-				"days since start" >= 7
-				"days since epoch" - "eesky: beggar: last" >= 45
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 10
+				"days since start" >= 2
+				"days since epoch" - "eesky: beggar: last" >= 20
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"

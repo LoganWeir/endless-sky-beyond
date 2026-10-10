@@ -27,9 +27,9 @@ mission "eesky: local: ledger"
 		or
 			has "eesky: debug: force ledger"
 			and
-				random < 2
-				"days since start" >= 7
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 8
+				"days since start" >= 2
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -88,9 +88,9 @@ mission "eesky: local: theseus"
 		or
 			has "eesky: debug: force theseus"
 			and
-				random < 2
-				"days since start" >= 7
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 8
+				"days since start" >= 2
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -148,9 +148,9 @@ mission "eesky: local: triage"
 		or
 			has "eesky: debug: force triage"
 			and
-				random < 2
-				"days since start" >= 7
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 8
+				"days since start" >= 2
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -198,9 +198,9 @@ mission "eesky: local: deserter"
 		or
 			has "eesky: debug: force deserter"
 			and
-				random < 2
-				"days since start" >= 7
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 8
+				"days since start" >= 2
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -249,9 +249,9 @@ mission "eesky: local: thief"
 		or
 			has "eesky: debug: force thief"
 			and
-				random < 2
-				"days since start" >= 7
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 8
+				"days since start" >= 2
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
@@ -300,9 +300,9 @@ mission "eesky: local: long odds"
 		or
 			has "eesky: debug: force long odds"
 			and
-				random < 2
-				"days since start" >= 7
-				"days since epoch" - "eesky: philosopher: last" >= 7
+				random < 8
+				"days since start" >= 2
+				"days since epoch" - "eesky: philosopher: last" >= 3
 				not "flagship planet attribute: uninhabited"
 	on offer
 		"eesky: philosopher: last" = "days since epoch"
