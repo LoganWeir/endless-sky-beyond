@@ -222,11 +222,14 @@ Conditions written (each `stat: <verb>` also has a `stat: <verb>: <object>` form
 | Conversations | `conversation choice`; the JSONL line also has the node, choice index and raw choice text | mission name |
 | Daily | `peak/low: credits`, `peak/low: net worth`, `days unable to pay bills`; a JSONL `daily` line with credits and net worth | |
 | Risk | `died` | capturer's government |
+| Hails | `hailed ship`, `hailed planet` | ship's government, or planet |
 | Sessions | JSONL only: `game started` (with enabled plugins and versions), `game quit` (with total play time) | |
 
 Not done yet from tier A: reputation change per session and its peaks and lows. The save-diff covers these for now, since reputation is in the save.
 
 ### Triggers
+
+**Implemented:** `on hail` for mission NPCs. Hailing one of the NPC's ships runs its actions (usually a conversation) instead of the stock hail panel, once. Plugins can now start a conversation from space that the player chooses to answer.
 
 Counters let missions *check* history; triggers let them *react* when something happens. Candidates that mirror the verbs above: on buy or sell commodity, on outfit or ship purchase, on kill, on board, on capture, on flagship disabled, on jump out, on fine, on reputation threshold crossed, on new peak (credits, distance) and on conversation choice.
 
@@ -284,7 +287,7 @@ One repo for now:
 
 ## Roadmap
 
-- **Phase 0 (engine readiness):** make the game good at accepting data-only updates before building the agent. The `Stats::Record` helper with both sinks, the tier-A hooks from the list above, a few new mission triggers, and agent-friendly validation (every error names its file; optionally JSON output; validate one plugin against a given save). Then a hand-written "philosopher NPC" plugin that exercises it all.
+- **Phase 0 (engine readiness):** make the game good at accepting data-only updates before building the agent. The `Stats::Record` helper with both sinks, the tier-A hooks from the list above, a few new mission triggers, and agent-friendly validation (every error names its file; optionally JSON output; validate one plugin against a given save). Then a hand-written "philosopher NPC" plugin that exercises it all. Done so far: stats helper and tier-A hooks, `on hail`, and `eesky/plugins/eesky-philosopher` (the Stranger's five-meeting arc and grey ship, six one-off locals, and a beggar), with conventions in `eesky/README.md`, `eesky/validate.sh` and integration tests.
 - **Phase 1:** the nightly agent: save-diff and JSONL ingest into SQLite, a profile model, one generated plugin per night validated with `-p`, and the feedback loop on mutation usage. Tier-B hooks as needed.
 - **Phase 2:** the Lua hook layer, which moves most mechanics to Tier 1.5.
 - **Phase 3:** C++ patches by the agent, gated hard by tests, for anything scripting can't reach.
