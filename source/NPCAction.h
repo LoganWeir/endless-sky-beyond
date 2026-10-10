@@ -50,6 +50,8 @@ public:
 
 	// Perform this action.
 	void Do(PlayerInfo &player, UI &ui, const Mission *caller, const std::shared_ptr<Ship> &target);
+	// Whether this action has already been performed.
+	bool IsTriggered() const;
 
 	// "Instantiate" this action by filling in the wildcard text for the actual
 	// destination, payment, cargo, etc.

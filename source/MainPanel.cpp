@@ -544,8 +544,12 @@ bool MainPanel::ShowHailPanel()
 				GameData::MessageCategories().Get("high")});
 		else
 		{
-			GetUI().Push(new HailPanel(player, target,
-				[&](const Government *bribed) { MainPanel::OnBribeCallback(bribed); }));
+			const Government *government = target->GetGovernment();
+			player.RecordStat("hailed ship", government ? government->TrueName() : "");
+			// A mission NPC may answer the hail with its own conversation.
+			if(!player.HailMissionNPC(target, GetUI()))
+				GetUI().Push(new HailPanel(player, target,
+					[&](const Government *bribed) { MainPanel::OnBribeCallback(bribed); }));
 			return true;
 		}
 	}
@@ -558,6 +562,7 @@ bool MainPanel::ShowHailPanel()
 			Messages::Add(*GameData::Messages().Get("wormhole hail"));
 		else if(planet->IsInhabited())
 		{
+			player.RecordStat("hailed planet", planet->TrueName());
 			GetUI().Push(new HailPanel(player, flagship->GetTargetStellar()));
 			return true;
 		}

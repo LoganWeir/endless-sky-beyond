@@ -199,6 +199,9 @@ public:
 	// If any event occurs between two ships, check to see if this mission cares
 	// about it. This may affect the mission status or display a message.
 	void Do(const ShipEvent &event, PlayerInfo &player, UI &ui);
+	// Handle the player hailing the given ship. Return true if one of this
+	// mission's NPCs responded with an "on hail" action.
+	bool Hail(const std::shared_ptr<Ship> &ship, PlayerInfo &player, UI &ui);
 	bool RequiresGiftedShip(const std::string &shipId) const;
 
 	// Get a specific mission action from this mission.

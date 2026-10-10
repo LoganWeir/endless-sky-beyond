@@ -2998,6 +2998,18 @@ void PlayerInfo::HandleEvent(const ShipEvent &event, UI &ui)
 
 
 
+// Let mission NPCs respond to the player hailing the given ship. Returns
+// true if one ran an "on hail" action, instead of the normal hail panel.
+bool PlayerInfo::HailMissionNPC(const shared_ptr<Ship> &ship, UI &ui)
+{
+	for(Mission &mission : missions)
+		if(mission.Hail(ship, *this, ui))
+			return true;
+	return false;
+}
+
+
+
 // Record statistics for ship events that involve the player's fleet.
 void PlayerInfo::RecordShipEvent(const ShipEvent &event)
 {

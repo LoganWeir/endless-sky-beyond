@@ -1471,6 +1471,18 @@ bool Mission::HasShip(const shared_ptr<Ship> &ship) const
 
 
 
+// Handle the player hailing the given ship. Return true if one of this
+// mission's NPCs responded with an "on hail" action.
+bool Mission::Hail(const shared_ptr<Ship> &ship, PlayerInfo &player, UI &ui)
+{
+	for(NPC &npc : npcs)
+		if(npc.Hail(ship, player, ui, this))
+			return true;
+	return false;
+}
+
+
+
 // If any event occurs between two ships, check to see if this mission cares
 // about it. This may affect the mission status or display a message.
 void Mission::Do(const ShipEvent &event, PlayerInfo &player, UI &ui)

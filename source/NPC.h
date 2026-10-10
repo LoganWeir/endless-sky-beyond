@@ -63,6 +63,8 @@ public:
 		ENCOUNTER,
 		// Can be triggered by either the CAPTURE or DESTROY events.
 		KILL,
+		// Triggered when the player hails one of this NPC's ships.
+		HAIL,
 	};
 
 
@@ -103,6 +105,9 @@ public:
 	// Handle the given ShipEvent. Return true if the event target is within this NPC.
 	bool Do(const ShipEvent &event, PlayerInfo &player, UI &ui,
 		const Mission *caller = nullptr, bool isVisible = true);
+	// Handle the player hailing the given ship. If it is one of this NPC's ships
+	// and an "on hail" action has not run yet, run it and return true.
+	bool Hail(const std::shared_ptr<Ship> &ship, PlayerInfo &player, UI &ui, const Mission *caller);
 	// Determine if the NPC is in a successful state, assuming the player is in the given system.
 	// (By default, a despawnable NPC has succeeded and is not actually checked.)
 	bool HasSucceeded(const System *playerSystem, bool ignoreIfDespawnable = true) const;

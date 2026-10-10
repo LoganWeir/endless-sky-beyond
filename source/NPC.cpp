@@ -62,6 +62,8 @@ namespace {
 				return "on kill";
 			case NPC::Trigger::ENCOUNTER:
 				return "on encounter";
+			case NPC::Trigger::HAIL:
+				return "on hail";
 			default:
 				return "unknown trigger";
 		}
@@ -186,6 +188,7 @@ void NPC::Load(const DataNode &node, const ConditionsStore *playerConditions,
 				{"destroy", Trigger::DESTROY},
 				{"kill", Trigger::KILL},
 				{"encounter", Trigger::ENCOUNTER},
+				{"hail", Trigger::HAIL},
 			};
 			auto it = trigger.find(child.Token(1));
 			if(it != trigger.end())
@@ -716,6 +719,22 @@ NPC NPC::Instantiate(const PlayerInfo &player, map<string, string> &subs, const 
 		result.npcActions[it.first] = it.second.Instantiate(subs, origin, jumps, payload);
 
 	return result;
+}
+
+
+
+// Handle the player hailing the given ship. If it is one of this NPC's ships
+// and an "on hail" action has not run yet, run it and return true.
+bool NPC::Hail(const shared_ptr<Ship> &ship, PlayerInfo &player, UI &ui, const Mission *caller)
+{
+	auto it = npcActions.find(Trigger::HAIL);
+	if(it == npcActions.end() || it->second.IsTriggered())
+		return false;
+	if(find(ships.begin(), ships.end(), ship) == ships.end())
+		return false;
+
+	it->second.Do(player, ui, caller, ship);
+	return true;
 }
 
 

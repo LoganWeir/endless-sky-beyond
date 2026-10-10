@@ -316,6 +316,9 @@ public:
 	void FailMission(const Mission &mission);
 	// Update mission status based on an event.
 	void HandleEvent(const ShipEvent &event, UI &ui);
+	// Let mission NPCs respond to the player hailing the given ship. Returns
+	// true if one ran an "on hail" action, instead of the normal hail panel.
+	bool HailMissionNPC(const std::shared_ptr<Ship> &ship, UI &ui);
 
 	// Access the "condition" flags for this player.
 	ConditionsStore &Conditions();
