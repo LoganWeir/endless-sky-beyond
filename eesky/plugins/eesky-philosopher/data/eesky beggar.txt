@@ -1,0 +1,118 @@
+# Copyright (c) 2026 by Logan Weir
+#
+# Endless Sky is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# Endless Sky is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
+
+# The beggar: the one encounter with real stakes. It repeats (at most every 45
+# days), and the amount asked for scales with how much money the player has.
+# Records how often the player gives and how much in total.
+#
+# Can be forced for testing by setting "eesky: debug: force beggar".
+
+
+mission "eesky: beggar"
+	non-blocking
+	repeat
+	source
+		attributes "service: missions"
+	"offer precedence" 3
+	to offer
+		or
+			has "eesky: debug: force beggar"
+			and
+				random < 3
+				"days since start" >= 7
+				"days since epoch" - "eesky: beggar: last" >= 45
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		"eesky: beggar: last" = "days since epoch"
+		"eesky: beggar: met" += 1
+		clear "eesky: debug: force beggar"
+		conversation
+			`On your way out of the spaceport, a thin man in a threadbare jacket steps into your path, hands open. "Captain. Please. I'm not going to lie to you about a sick child or a lost ticket home. I'm just hungry, and I'm out of ideas."`
+			branch poor
+				credits < 500
+			branch rich
+				credits >= 1000000
+
+			`	He glances at your flight suit, at the ship keys on your belt. "Five hundred credits would keep me fed for a week. Anything at all would help."`
+			choice
+				`	(Give him 500 credits.)`
+					goto "give 500"
+				`	(Give him 50 credits.)`
+					goto "give 50"
+				`	"Sorry. I can't help you."`
+					goto refuse
+
+			label rich
+			`	He takes in your expensive boots and the way the dock crew hurries to your ship. "Captain, ten thousand credits is nothing to someone like you. It would change everything for me."`
+			choice
+				`	(Give him 10,000 credits.)`
+					goto "give 10000"
+				`	(Give him 1,000 credits.)`
+					goto "give 1000"
+				`	"Sorry. I can't help you."`
+					goto refuse
+
+			label poor
+			`	He looks at your patched flight suit and your nearly empty credit chip, and his face softens. "Ah. You're not doing much better than me, are you?"`
+			choice
+				`	(Split your meal with him.)`
+					goto share
+				`	"No, I'm not. Good luck."`
+					goto refuse
+
+			label "give 500"
+			action
+				payment -500
+				"eesky: beggar: gave" += 500
+				"eesky: trait: generous" += 1
+			`	He takes the credits with both hands and bows his head. "Thank you. You don't know what this means."`
+				decline
+
+			label "give 50"
+			action
+				payment -50
+				"eesky: beggar: gave" += 50
+			`	"Thank you, Captain," he says. "Truly." He means it, though you can see him calculating how far it will go.`
+				decline
+
+			label "give 10000"
+			action
+				payment -10000
+				"eesky: beggar: gave" += 10000
+				"eesky: trait: generous" += 2
+			`	He stares at the number on his chip for a long time. When he looks up, his eyes are wet. "I won't forget this. I won't forget you."`
+				decline
+
+			label "give 1000"
+			action
+				payment -1000
+				"eesky: beggar: gave" += 1000
+				"eesky: trait: generous" += 1
+			`	"That's very kind," he says, and it is. Still, you notice him glance once more at your boots as he walks away.`
+				decline
+
+			label share
+			action
+				"eesky: beggar: shared" += 1
+				"eesky: trait: generous" += 2
+			`	The two of you split a cheap noodle box on a bench by the departure boards. He tells you he used to fly cargo haulers, before. You don't ask before what.`
+				decline
+
+			label refuse
+			action
+				"eesky: beggar: refused" += 1
+				"eesky: trait: generous" -= 1
+			`	He nods, unsurprised, and steps aside to wait for the next captain.`
+				decline

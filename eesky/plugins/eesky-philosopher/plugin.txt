@@ -1,0 +1,7 @@
+name "eesky-philosopher"
+about "Strangers in spaceports, and one grey ship, ask the player moral and philosophical questions. Answers are recorded as conditions for Endless Endless Sky to read."
+version "0.1.0"
+authors
+	"Logan Weir"
+tags
+	"story"

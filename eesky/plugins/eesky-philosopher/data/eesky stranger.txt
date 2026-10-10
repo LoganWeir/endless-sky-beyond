@@ -1,0 +1,456 @@
+# Copyright (c) 2026 by Logan Weir
+#
+# Endless Sky is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# Endless Sky is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
+
+# The Stranger: a recurring figure in grey who finds the player in spaceports,
+# asks one question per meeting, and slowly admits to watching them. The five
+# meetings happen in order, at least 30 days apart. The fifth one asks what the
+# player wants from whoever is reshaping the galaxy around them.
+#
+# Each meeting can be forced for testing by setting "eesky: debug: force stranger".
+
+
+mission "eesky: Stranger 1"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 5
+	to offer
+		or
+			has "eesky: debug: force stranger"
+			and
+				random < 2
+				"days since start" >= 14
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		"eesky: stranger: last" = "days since epoch"
+		clear "eesky: debug: force stranger"
+		conversation
+			`In a quiet corner of the spaceport, someone has saved you a seat. You know this because the person sitting across from it, a figure in a plain grey coat, says your name as you pass. "Captain <last>. Sit, please. I won't keep you long."`
+			`	You've never seen them before. Their face is the sort you forget while you are still looking at it. They slide a cup of something warm toward you, as if they had known exactly when you would arrive.`
+			`	"I have a question I ask people," they say. "Suppose you could make the galaxy better. Measurably better: fewer wars, fewer famines. But the only way to do it is to quietly nudge what people choose, without them ever knowing they had been nudged. Would you do it?"`
+			choice
+				`	"Yes. If the results are real, the method doesn't matter."`
+					goto yes
+				`	"No. People have a right to make their own choices, even bad ones."`
+					goto no
+				`	"That depends on who decides what 'better' means."`
+					goto depends
+				`	"I'd want to know if someone was doing that to me."`
+					goto know
+
+			label yes
+			action
+				"eesky: trait: utilitarian" += 1
+				"eesky: answer: stranger 1" = 1
+			`	The stranger nods slowly, as if confirming something they already suspected. "An honest answer. Most people say no and mean yes."`
+				goto end
+
+			label no
+			action
+				"eesky: trait: utilitarian" -= 1
+				"eesky: answer: stranger 1" = 2
+			`	"Even bad ones," the stranger repeats, turning the words over. "That's a generous view of people. I hope it holds up."`
+				goto end
+
+			label depends
+			action
+				"eesky: trait: curious" += 1
+				"eesky: answer: stranger 1" = 3
+			`	The stranger smiles for the first time. "Yes. That is the whole question, isn't it? Most people never get past the first half."`
+				goto end
+
+			label know
+			action
+				"eesky: trait: loyal" -= 1
+				"eesky: trait: curious" += 1
+				"eesky: answer: stranger 1" = 4
+			`	"Would you?" The stranger tilts their head. "How would you tell the difference?"`
+
+			label end
+			`	You glance down at your cup, and when you look up, the seat across from you is empty. Nobody nearby remembers anyone sitting there.`
+				decline
+
+
+
+mission "eesky: Stranger 2"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 5
+	to offer
+		has "eesky: Stranger 1: offered"
+		or
+			has "eesky: debug: force stranger"
+			and
+				random < 3
+				"days since epoch" - "eesky: stranger: last" >= 30
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		"eesky: stranger: last" = "days since epoch"
+		clear "eesky: debug: force stranger"
+		conversation
+			`The figure in grey is waiting at the end of the landing pad when you step off your ship, hands in their coat pockets, as if they have been standing there all day.`
+			branch fighter
+				"stat: destroyed" >= 10
+			branch trader
+				"stat: commodity sold" >= 500
+			branch explorer
+				"stat: systems discovered" >= 20
+			`	"You're hard to read, Captain," they say. "You don't fight much. You don't trade much. You don't wander far. I can't tell yet what you want."`
+				goto question
+
+			label fighter
+			`	"&[stat: destroyed] ships," the stranger says by way of greeting. "That's how many you've left as wreckage since I started watching. I'm not judging. I'm counting."`
+				goto question
+
+			label trader
+			`	"&[stat: commodity sold] tons," the stranger says by way of greeting. "That's how much cargo you've sold since I started watching. You have a merchant's patience."`
+				goto question
+
+			label explorer
+			`	"&[stat: systems discovered] systems you had never seen before," the stranger says by way of greeting. "That's how many since I started watching. You don't like to stay in one place."`
+
+			label question
+			`	"So tell me," they say. "What are you actually looking for out here?"`
+			choice
+				`	"A good fight."`
+					goto danger
+				`	"Money. Enough that I never have to worry again."`
+					goto wealth
+				`	"Places nobody has been."`
+					goto discovery
+				`	"People. Stories. Something to be part of."`
+					goto belonging
+				`	"Quiet."`
+					goto peace
+
+			label danger
+			action
+				"eesky: wants: danger" += 1
+				"eesky: trait: bold" += 1
+				"eesky: answer: stranger 2" = 1
+			`	"Honest," the stranger says. "The galaxy will happily oblige you."`
+				goto end
+
+			label wealth
+			action
+				"eesky: wants: wealth" += 1
+				"eesky: answer: stranger 2" = 2
+			`	"Security," the stranger says. "The one thing money is worst at buying."`
+				goto end
+
+			label discovery
+			action
+				"eesky: wants: discovery" += 1
+				"eesky: trait: curious" += 1
+				"eesky: answer: stranger 2" = 3
+			`	The stranger's eyes brighten a little. "There are more of those left than you'd think."`
+				goto end
+
+			label belonging
+			action
+				"eesky: wants: belonging" += 1
+				"eesky: trait: loyal" += 1
+				"eesky: answer: stranger 2" = 4
+			`	"Ah," the stranger says softly. "That's rarer than you might expect, out here."`
+				goto end
+
+			label peace
+			action
+				"eesky: wants: peace" += 1
+				"eesky: trait: bold" -= 1
+				"eesky: answer: stranger 2" = 5
+			`	"Quiet," the stranger says, as if the word were in a foreign language. "I'll see what I can do."`
+
+			label end
+			`	"Noted," they say, and you have the uneasy feeling that they mean it literally. By the time the dock crew walks between you, they are gone.`
+				decline
+
+
+
+mission "eesky: Stranger 3"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 5
+	to offer
+		has "eesky: Stranger 2: offered"
+		or
+			has "eesky: debug: force stranger"
+			and
+				random < 3
+				"days since epoch" - "eesky: stranger: last" >= 30
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		"eesky: stranger: last" = "days since epoch"
+		clear "eesky: debug: force stranger"
+		conversation
+			`You find the stranger in grey at the spaceport bar, two drinks in front of them, one untouched. They push it toward you without looking up.`
+			`	"A friend comes to you in the middle of the night," they say. "The authorities are looking for them. They swear they're innocent. But you have seen the evidence, and you're fairly sure they aren't. They ask you to hide them on your ship. What do you do?"`
+			choice
+				`	"I hide them. A friend is a friend."`
+					goto hide
+				`	"I turn them in. If they did it, they answer for it."`
+					goto turn
+				`	"I hide them, and find out the truth myself."`
+					goto investigate
+				`	"I tell them to run, but I don't get involved."`
+					goto run
+
+			label hide
+			action
+				"eesky: trait: loyal" += 1
+				"eesky: answer: stranger 3" = 1
+			`	"Loyalty," the stranger says. "The most dangerous virtue. It never asks where it's going."`
+				goto end
+
+			label turn
+			action
+				"eesky: trait: loyal" -= 1
+				"eesky: trait: merciful" -= 1
+				"eesky: answer: stranger 3" = 2
+			`	"Clean," the stranger says. "Cold, but clean. I wonder if you'd say the same if it were you in the cargo hold."`
+				goto end
+
+			label investigate
+			action
+				"eesky: trait: loyal" += 1
+				"eesky: trait: curious" += 1
+				"eesky: answer: stranger 3" = 3
+			`	"You want to be loyal and right at the same time." They almost laugh. "That's either wisdom or greed. I haven't decided which."`
+				goto end
+
+			label run
+			action
+				"eesky: trait: bold" -= 1
+				"eesky: answer: stranger 3" = 4
+			`	"Hands clean," the stranger says. "Mostly." They don't sound disappointed, exactly.`
+
+			label end
+			`	They stand and leave a few credits on the bar. "Someone else is asking these questions too, you know. Not all of them as kindly as I do." Then they are gone into the crowd.`
+				decline
+
+
+
+mission "eesky: Stranger 4"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 5
+	to offer
+		has "eesky: Stranger 3: offered"
+		or
+			has "eesky: debug: force stranger"
+			and
+				random < 3
+				"days since epoch" - "eesky: stranger: last" >= 30
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		"eesky: stranger: last" = "days since epoch"
+		clear "eesky: debug: force stranger"
+		conversation
+			`This time the stranger in grey doesn't bother with a seat. They fall into step beside you in a busy corridor of the spaceport, as if the two of you had been walking together all along.`
+			`	"Imagine a pirate," they say. "One who killed someone on your crew, someone you cared about. Now their ship is wreckage and they're drifting in an escape pod with an hour of air left. You're the only ship in range. What do you do?"`
+			choice
+				`	"Tow them to the nearest station to stand trial."`
+					goto trial
+				`	"Leave them. They made their choice."`
+					goto leave
+				`	"Pull them aboard and let them go somewhere far away."`
+					goto spare
+				`	"End it quickly. Nobody deserves to suffocate."`
+					goto execute
+
+			label trial
+			action
+				"eesky: trait: utilitarian" -= 1
+				"eesky: answer: stranger 4" = 1
+			`	"The law, then," the stranger says. "You'd trust strangers in robes over your own judgment. Interesting."`
+				goto end
+
+			label leave
+			action
+				"eesky: trait: merciful" -= 1
+				"eesky: answer: stranger 4" = 2
+			`	"Justice by doing nothing." The stranger nods. "It's popular. It lets people sleep."`
+				goto end
+
+			label spare
+			action
+				"eesky: trait: merciful" += 2
+				"eesky: answer: stranger 4" = 3
+			`	The stranger stops walking and looks at you properly for the first time. "Huh," is all they say.`
+				goto end
+
+			label execute
+			action
+				"eesky: trait: merciful" -= 1
+				"eesky: trait: bold" += 1
+				"eesky: answer: stranger 4" = 4
+			`	"Mercy and murder in the same breath," the stranger says. "You'd be surprised how often those two travel together."`
+
+			label end
+			`	"I've been asking you these questions because I'm deciding what to show you next," they say. Before you can ask what that means, a cargo cart rolls between you, and when it passes, the corridor is empty.`
+				decline
+
+
+
+mission "eesky: Stranger 5"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 5
+	to offer
+		has "eesky: Stranger 4: offered"
+		or
+			has "eesky: debug: force stranger"
+			and
+				random < 3
+				"days since epoch" - "eesky: stranger: last" >= 30
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		"eesky: stranger: last" = "days since epoch"
+		clear "eesky: debug: force stranger"
+		conversation
+			`The stranger in grey is sitting on the edge of your landing pad, legs dangling over the drop, watching ships come and go. They don't turn around when you approach.`
+			`	"Last question," they say. "Suppose someone has been reshaping this galaxy around you. Small things. The jobs that show up. The people you happen to meet. The way certain planets treat you. If you could tell them one thing, what would it be?"`
+			choice
+				`	"Make it harder."`
+					goto harder
+				`	"Make it stranger."`
+					goto stranger
+				`	"Make it mean something."`
+					goto meaning
+				`	"Leave me alone."`
+					goto alone
+				`	"Who are you?"`
+					goto who
+
+			label harder
+			action
+				"eesky: wants: challenge" += 1
+				"eesky: answer: stranger 5" = 1
+			`	"Harder," the stranger repeats, as if writing it down. "Be careful what you ask for out loud."`
+				goto end
+
+			label stranger
+			action
+				"eesky: wants: strangeness" += 1
+				"eesky: answer: stranger 5" = 2
+			`	The stranger laughs, a real laugh. "Oh, I think that can be arranged."`
+				goto end
+
+			label meaning
+			action
+				"eesky: wants: meaning" += 1
+				"eesky: answer: stranger 5" = 3
+			`	"Meaning." The stranger is quiet for a long moment. "That's the hard one. Nobody can hand you that. But I can try to leave it lying around where you'll trip over it."`
+				goto end
+
+			label alone
+			action
+				"eesky: wants: autonomy" += 1
+				"eesky: answer: stranger 5" = 4
+			`	"Fair," the stranger says, without a trace of offense. "Everyone deserves a little room. I'll try to keep my hands off the controls."`
+				goto end
+
+			label who
+			action
+				"eesky: asked who" = 1
+				"eesky: answer: stranger 5" = 5
+			`	The stranger finally turns to look at you. "Someone who is paid to keep you flying," they say. "That's the honest answer. Whether that makes me your friend is something you'll have to decide."`
+
+			label end
+			`	They stand, brush the dust from their coat, and walk off the edge of the pad. You rush to look over, but there is nothing below but the long drop and the lights of the port.`
+				decline
+		"eesky: stranger: arc complete" = 1
+
+
+
+# The grey ship: after the second meeting, the Stranger may also appear as a
+# ship that waits in the system when the player takes off. Hailing it starts a
+# conversation (the "on hail" NPC trigger); ignoring it is also an answer.
+mission "eesky: The Grey Ship"
+	landing
+	invisible
+	deadline 3
+	source
+		attributes "service: missions"
+	to offer
+		or
+			has "eesky: debug: force grey ship"
+			and
+				has "eesky: Stranger 2: offered"
+				random < 5
+				"days since epoch" - "eesky: stranger: last" >= 20
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		"eesky: stranger: last" = "days since epoch"
+		"eesky: grey ship: seen" += 1
+		clear "eesky: debug: force grey ship"
+	npc
+		government "Independent"
+		personality staying uninterested pacifist
+		ship "Bounder" "Grey Lantern"
+		on encounter
+			message
+				text `A grey ship is holding position nearby, broadcasting your name and nothing else. (Hail it to answer.)`
+				category "high"
+		on hail
+			conversation
+				`The grey ship answers before your hail has finished connecting. The stranger's face fills your screen, lit from below by instrument panels.`
+				`	"Out here there's nobody watching," they say. "No authorities, no witnesses, no one to tell. So here is a question for empty space: if you did something wrong and nobody ever found out, would it still be wrong?"`
+				choice
+					`	"Of course. Wrong is wrong, watched or not."`
+						goto principled
+					`	"If it never hurts anyone, then no."`
+						goto practical
+					`	"Somebody always finds out."`
+						goto cautious
+
+				label principled
+				action
+					"eesky: trait: utilitarian" -= 1
+					"eesky: answer: grey ship" = 1
+				`	"You say that to an empty sky," the stranger says. "I believe you mean it."`
+					goto end
+
+				label practical
+				action
+					"eesky: trait: utilitarian" += 1
+					"eesky: answer: grey ship" = 2
+				`	"Harm as the only measure," the stranger says. "Tidy. Though harm has a way of turning up later than you expect."`
+					goto end
+
+				label cautious
+				action
+					"eesky: trait: bold" -= 1
+					"eesky: answer: grey ship" = 3
+				`	The stranger smiles. "Yes," they say. "Somebody does."`
+
+				label end
+				`	The channel closes. When you check your sensors, the grey ship is still there, perfectly still, as if it has nowhere else to be.`
+			"eesky: grey ship: hailed" += 1
+			fail

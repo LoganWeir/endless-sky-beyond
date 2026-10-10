@@ -1,0 +1,341 @@
+# Copyright (c) 2026 by Logan Weir
+#
+# Endless Sky is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# Endless Sky is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
+
+# One-off spaceport encounters. Each local asks a single dilemma, nudges one or
+# two trait axes, records the exact answer, and never appears again.
+#
+# Each one can be forced for testing by setting "eesky: debug: force <id>",
+# where <id> is the word after "eesky: local: " in the mission name.
+
+
+mission "eesky: local: ledger"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 4
+	to offer
+		or
+			has "eesky: debug: force ledger"
+			and
+				random < 2
+				"days since start" >= 7
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		clear "eesky: debug: force ledger"
+		conversation
+			`A dockworker with grease up to her elbows catches your sleeve near the cargo lifts. "You're a captain. You deal with money. Can I ask you something?" She doesn't wait for an answer.`
+			`	"I keep the books for the shipping company that runs this dock. Last week I found out the owner has been cheating the port authority for years. If I report it, he goes to prison and the company folds. Three hundred people lose their jobs, me included. If I bury it, nobody gets hurt except the port's tax office. What would you do?"`
+			choice
+				`	"Report it. The truth matters more than the fallout."`
+					goto report
+				`	"Bury it. Three hundred families matter more than one crook."`
+					goto bury
+				`	"Warn the workers first, then report it anonymously."`
+					goto warn
+				`	"Stay out of it. It isn't your job to fix."`
+					goto aside
+
+			label report
+			action
+				"eesky: trait: utilitarian" -= 1
+				"eesky: answer: ledger" = 1
+			`	She nods slowly, like she was hoping you'd say something else. "Yeah. I know. I just needed someone else to say it."`
+				decline
+
+			label bury
+			action
+				"eesky: trait: utilitarian" += 1
+				"eesky: answer: ledger" = 2
+			`	Relief floods her face, followed quickly by guilt. "Right. Right. Nobody gets hurt." She says it twice, as if to make it true.`
+				decline
+
+			label warn
+			action
+				"eesky: trait: utilitarian" += 1
+				"eesky: trait: bold" += 1
+				"eesky: answer: ledger" = 3
+			`	She stares at you, then grins. "That's sneaky. I like it. I'd probably get caught, but I like it."`
+				decline
+
+			label aside
+			action
+				"eesky: trait: curious" -= 1
+				"eesky: answer: ledger" = 4
+			`	"Easy for you to say," she mutters. "You get to leave." She goes back to the lifts without another word.`
+				decline
+
+
+
+mission "eesky: local: theseus"
+	non-blocking
+	source
+		attributes "service: missions"
+		attributes "shipyard"
+	"offer precedence" 4
+	to offer
+		or
+			has "eesky: debug: force theseus"
+			and
+				random < 2
+				"days since start" >= 7
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		clear "eesky: debug: force theseus"
+		conversation
+			`An old mechanic is sitting on an upturned crate beside your ship, staring at the hull of the <ship> with professional interest. "Nice work on the plating," he says. "Most of it's newer than the frame, though. Can I ask you a question, Captain?"`
+			`	"Say you replace a ship one piece at a time. Hull plates, engines, wiring, the pilot's chair, everything, until there isn't a single original part left. Is it still the same ship?"`
+			choice
+				`	"Same ship. What matters is the story, not the parts."`
+					goto story
+				`	"No. It's a new ship that happens to have the same name."`
+					goto new
+				`	"Does it fly? Then I don't care."`
+					goto fly
+				`	"I'm not the same pilot I was when I started, either."`
+					goto pilot
+
+			label story
+			action
+				"eesky: trait: curious" += 1
+				"eesky: trait: loyal" += 1
+				"eesky: answer: theseus" = 1
+			`	"A romantic," the mechanic says approvingly. "Ships like romantics. They get looked after."`
+				decline
+
+			label new
+			action
+				"eesky: trait: curious" += 1
+				"eesky: answer: theseus" = 2
+			`	He chuckles. "Then I've built a lot of new ships in my life without ever getting paid for one."`
+				decline
+
+			label fly
+			action
+				"eesky: trait: curious" -= 1
+				"eesky: answer: theseus" = 3
+			`	The mechanic laughs out loud. "Spoken like a real captain. Philosophy doesn't burn fuel."`
+				decline
+
+			label pilot
+			action
+				"eesky: trait: curious" += 2
+				"eesky: answer: theseus" = 4
+			`	He's quiet for a while. "No," he says eventually. "None of us are. That's the trouble with good questions. They follow you home."`
+				decline
+
+
+
+mission "eesky: local: triage"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 4
+	to offer
+		or
+			has "eesky: debug: force triage"
+			and
+				random < 2
+				"days since start" >= 7
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		clear "eesky: debug: force triage"
+		conversation
+			`At a table in the spaceport cafe, a ship's doctor in a stained uniform is staring at a cup of tea that went cold some time ago. When you sit nearby, she looks up as though she has been waiting for someone, anyone, to talk to.`
+			`	"Hypothetical," she says. "You're the doctor on a damaged ship. You have one dose of a drug that will save one life. Two patients need it: a young deckhand who will make a full recovery, and the captain, who is older and badly hurt but is the only one who knows how to get everyone home. Who gets the dose?"`
+			choice
+				`	"The captain. Everyone else's lives depend on them."`
+					goto captain
+				`	"The deckhand. They have more life ahead of them."`
+					goto deckhand
+				`	"Flip a coin. It isn't my place to rank lives."`
+					goto coin
+
+			label captain
+			action
+				"eesky: trait: utilitarian" += 1
+				"eesky: answer: triage" = 1
+			`	"The arithmetic answer," she says. "It's what the manual says, too." She doesn't look comforted.`
+				decline
+
+			label deckhand
+			action
+				"eesky: trait: merciful" += 1
+				"eesky: answer: triage" = 2
+			`	"That's what I did," she says quietly. "We got home anyway. Barely." She finally drinks the cold tea.`
+				decline
+
+			label coin
+			action
+				"eesky: trait: utilitarian" -= 1
+				"eesky: answer: triage" = 3
+			`	"Fairness as a way out of deciding." She almost smiles. "I've thought about that one a lot, too."`
+				decline
+
+
+
+mission "eesky: local: deserter"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 4
+	to offer
+		or
+			has "eesky: debug: force deserter"
+			and
+				random < 2
+				"days since start" >= 7
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		clear "eesky: debug: force deserter"
+		conversation
+			`A young pilot in a planetary militia flight suit is pacing near the departure boards. When she notices you watching, she walks straight over. "You're a free captain, right? Nobody gives you orders?"`
+			`	"My unit ships out tomorrow to blockade a colony that's behind on its taxes. They're already short on food. Our orders are to turn back anything that tries to land, including relief ships. I can't stop thinking about deserting. What would you do?"`
+			choice
+				`	"Stay. You gave your word to your unit."`
+					goto stay
+				`	"Go. Your conscience outranks your commander."`
+					goto go
+				`	"Stay, and let a few relief ships slip through."`
+					goto subvert
+
+			label stay
+			action
+				"eesky: trait: loyal" += 1
+				"eesky: answer: deserter" = 1
+			`	She nods stiffly. "Right. A promise is a promise." She doesn't sound like she believes it yet, but she will try.`
+				decline
+
+			label go
+			action
+				"eesky: trait: loyal" -= 1
+				"eesky: answer: deserter" = 2
+			`	She lets out a long breath. "I think I needed somebody to say it out loud." She looks at the departure board differently now.`
+				decline
+
+			label subvert
+			action
+				"eesky: trait: loyal" += 1
+				"eesky: trait: bold" += 1
+				"eesky: answer: deserter" = 3
+			`	Her eyes widen, then narrow. "That could get me court-martialed." A pause. "But it could work."`
+				decline
+
+
+
+mission "eesky: local: thief"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 4
+	to offer
+		or
+			has "eesky: debug: force thief"
+			and
+				random < 2
+				"days since start" >= 7
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		clear "eesky: debug: force thief"
+		conversation
+			`The dockmaster is waiting for you at the foot of the boarding ramp, one hand firmly on the shoulder of a skinny kid of about twelve. "Caught this one trying to pry open your cargo hatch, Captain. Nothing taken. Do you want to press charges?"`
+			`	The kid stares at the ground. Their shoes have been patched so many times there is hardly any of the original shoe left.`
+			choice
+				`	"Yes. Stealing is stealing, no matter who does it."`
+					goto charges
+				`	"No. Let them go."`
+					goto release
+				`	"No charges. But they can work off the trouble loading my cargo."`
+					goto work
+
+			label charges
+			action
+				"eesky: trait: merciful" -= 1
+				"eesky: answer: thief" = 1
+			`	The dockmaster shrugs and leads the kid away. They don't look back at you, and you find yourself wishing they had.`
+				decline
+
+			label release
+			action
+				"eesky: trait: merciful" += 1
+				"eesky: answer: thief" = 2
+			`	The dockmaster lets go, and the kid bolts without a word. You can't tell if you've done them a kindness or just taught them which ships to try next time.`
+				decline
+
+			label work
+			action
+				"eesky: trait: merciful" += 1
+				"eesky: trait: utilitarian" += 1
+				"eesky: answer: thief" = 3
+			`	The kid works harder than any loader you've ever paid. When the job is done, they mumble a thank-you and vanish into the crowd before you can offer them anything more.`
+				decline
+
+
+
+mission "eesky: local: long odds"
+	non-blocking
+	source
+		attributes "service: missions"
+	"offer precedence" 4
+	to offer
+		or
+			has "eesky: debug: force long odds"
+			and
+				random < 2
+				"days since start" >= 7
+				"days since epoch" - "eesky: philosopher: last" >= 7
+				not "flagship planet attribute: uninhabited"
+	on offer
+		"eesky: philosopher: last" = "days since epoch"
+		clear "eesky: debug: force long odds"
+		conversation
+			`An old explorer with a chest full of faded mission patches is holding court at the spaceport bar. When the crowd thins out, he turns his attention to you. "You've got the look of somebody who checks the star charts for blank spots. Let me ask you something."`
+			`	"Say someone hands you coordinates to a system nobody has ever visited. One jump in. No guarantee there's fuel on the other side to get you back. Do you go?"`
+			choice
+				`	"Immediately."`
+					goto go
+				`	"Not without a plan to get home."`
+					goto plan
+				`	"No. Blank spots on the map are blank for a reason."`
+					goto stay
+
+			label go
+			action
+				"eesky: trait: bold" += 2
+				"eesky: answer: long odds" = 1
+			`	He slaps the bar with delight. "That's how I got every one of these patches, and how I lost most of my friends." He doesn't stop smiling.`
+				decline
+
+			label plan
+			action
+				"eesky: trait: bold" += 1
+				"eesky: trait: curious" += 1
+				"eesky: answer: long odds" = 2
+			`	"Smart," he says. "The ones with a plan are the ones who come back to tell the story."`
+				decline
+
+			label stay
+			action
+				"eesky: trait: bold" -= 1
+				"eesky: answer: long odds" = 3
+			`	"Maybe so," he says, a little sadly. "But somebody has to fill them in eventually."`
+				decline
