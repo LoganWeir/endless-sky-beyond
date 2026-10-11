@@ -806,6 +806,13 @@ const vector<StartConditions> &GameData::StartOptions()
 
 
 
+const vector<const Sprite *> &GameData::JumpFlashSprites()
+{
+	return objects.jumpFlashSprites;
+}
+
+
+
 const vector<Trade::Commodity> &GameData::Commodities()
 {
 	return objects.trade.Commodities();

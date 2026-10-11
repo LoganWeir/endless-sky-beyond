@@ -630,6 +630,8 @@ void Engine::Step(bool isActive)
 	{
 		flash = .4;
 		doFlash = false;
+		const vector<const Sprite *> &flashSprites = GameData::JumpFlashSprites();
+		flashSprite = flashSprites.empty() ? nullptr : flashSprites[Random::Int(flashSprites.size())];
 	}
 	else if(flash)
 		flash = max(0., flash * .99 - .002);
@@ -1250,7 +1252,21 @@ void Engine::Draw() const
 	}
 
 	if(flash)
-		FillShader::Fill(Point(), Screen::Dimensions(), Color(flash, flash));
+	{
+		// Plugins can replace the plain white flash with a random image,
+		// scaled to cover the screen and fading out the same way.
+		if(flashSprite && flashSprite->IsLoaded() && flashSprite->Width() > 0.f && flashSprite->Height() > 0.f)
+		{
+			float zoom = max(Screen::Width() / flashSprite->Width(), Screen::Height() / flashSprite->Height());
+			SpriteShader::Item item = SpriteShader::Prepare(flashSprite, Point(), zoom);
+			item.alpha = flash;
+			SpriteShader::Bind();
+			SpriteShader::Add(item);
+			SpriteShader::Unbind();
+		}
+		else
+			FillShader::Fill(Point(), Screen::Dimensions(), Color(flash, flash));
+	}
 
 	// Draw messages. Draw the most recent messages first, as some messages
 	// may be wrapped onto multiple lines.

@@ -58,6 +58,16 @@ These exist only in this fork, not upstream Endless Sky:
 - **Play statistics** as `stat: ...` conditions (trades, combat, travel, missions, conversation choices, and more). The full list is in the design doc under "Implemented so far". For example, `branch fighter` + `"stat: destroyed" >= 10` lets a conversation react to how someone plays, and `&[stat: destroyed]` prints the number in text.
 - **`on hail` NPC trigger.** In a mission's `npc` block, `on hail` runs its actions (usually a `conversation`) when the player hails one of that NPC's ships, instead of the normal hail panel. It runs once; later hails get the normal panel. Pair it with an `on encounter` `message` that tells the player to hail. See `The Grey Ship` in `plugins/eesky-philosopher/data/eesky stranger.txt`.
 
+- **`jump flash` images.** A top-level `"jump flash"` node lists images for the flash shown on arriving in a system. Each jump picks one at random and draws it over the screen, scaled to cover it, with the same strength and fade as the normal white flash (about a second). Images from every plugin are pooled; with none, the flash stays white. It only appears when "Show hyperspace flash" is on in Preferences, which is off by default. Image paths are relative to a plugin's `images/` folder:
+
+  ```
+  "jump flash"
+  	sprite "flash/aurora"
+  	sprite "flash/nebula"
+  ```
+
+  with the files at `images/flash/aurora.png` and `images/flash/nebula.png`.
+
 ## Tests
 
 Integration tests for these plugins live in `tests/integration/config/plugins/integration-tests/data/tests/tests_eesky_*.txt`. Tests whose names start with `eesky ` get the plugins in `eesky/plugins` copied into their config (see `tests/integration/RunIntegrationTest.cmake`); other tests don't, so the random encounters can't interfere with them.

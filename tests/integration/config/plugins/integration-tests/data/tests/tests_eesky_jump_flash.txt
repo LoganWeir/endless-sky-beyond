@@ -1,0 +1,40 @@
+# Copyright (c) 2026 by Logan Weir
+#
+# Endless Sky is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# Endless Sky is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
+
+# Give the hyperspace arrival flash some images. Headless tests don't draw
+# frames, so this checks that "jump flash" data loads and that jumping with it
+# works; the drawing itself has to be checked by eye.
+"jump flash"
+	sprite "ship/star barge"
+	sprite "ship/shuttle"
+
+
+
+test "eesky Jump Flash Data Loads"
+	status active
+	description "Jumping with plugin-provided flash images works, and the jump is recorded."
+	sequence
+		inject "Three Earthly Barges Save"
+		call "Load First Savegame"
+		call "Depart"
+		navigate
+			travel "Alpha Centauri"
+		input
+			command jump
+		label "jumping"
+		branch "jumping"
+			not "flagship system: Alpha Centauri"
+		assert
+			"flagship system: Alpha Centauri" == 1
+			"stat: jumped: Alpha Centauri" == 1
+			"stat: jump method: hyperdrive" == 1

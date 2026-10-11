@@ -149,6 +149,8 @@ private:
 	TextReplacements substitutions;
 	Trade trade;
 	std::vector<StartConditions> startConditions;
+	// Images that plugins have added to the flash shown on arriving in a system.
+	std::vector<const Sprite *> jumpFlashSprites;
 	std::map<std::string, std::vector<std::string>> ratings;
 	std::map<const Sprite *, StellarObjectSpriteData> objectSpriteData;
 	std::map<CategoryType, CategoryList> categories;

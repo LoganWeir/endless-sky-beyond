@@ -163,6 +163,8 @@ public:
 	static const Government *PlayerGovernment();
 	static Politics &GetPolitics();
 	static const std::vector<StartConditions> &StartOptions();
+	// Images the hyperspace arrival flash may show instead of plain white.
+	static const std::vector<const Sprite *> &JumpFlashSprites();
 
 	static const std::vector<Trade::Commodity> &Commodities();
 	static const std::vector<Trade::Commodity> &SpecialCommodities();

@@ -306,6 +306,8 @@ private:
 	int nukeAlarmTime = 0;
 	double flash = 0.;
 	bool doFlash = false;
+	// An image to show in the flash instead of plain white, if plugins provide any.
+	const Sprite *flashSprite = nullptr;
 	bool doEnterLabels = false;
 	bool doEnter = false;
 	bool hadHostiles = false;

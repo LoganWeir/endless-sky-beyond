@@ -552,6 +552,18 @@ void UniverseObjects::LoadFile(const filesystem::path &path, const PlayerInfo &p
 				*shipyard = Shop<Ship>();
 			shipyard->Load(node, ships, playerConditions, visitedSystems, visitedPlanets);
 		}
+		else if(key == "jump flash")
+		{
+			// Each plugin can add images to the pool that the hyperspace
+			// arrival flash picks from.
+			for(const DataNode &child : node)
+			{
+				if(child.Token(0) == "sprite" && child.Size() >= 2)
+					jumpFlashSprites.push_back(SpriteSet::Get(child.Token(1)));
+				else
+					child.PrintTrace("Skipping unrecognized attribute:");
+			}
+		}
 		else if(key == "start" && node.HasChildren())
 		{
 			// This node may either declare an immutable starting scenario, or one that is open to extension
