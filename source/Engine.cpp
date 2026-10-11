@@ -626,12 +626,14 @@ void Engine::Step(bool isActive)
 			player.TravelPlan().clear();
 		}
 	}
+	if(!hasFoundFlashSprites)
+		PrepareNextFlash();
 	if(doFlash)
 	{
 		flash = .4;
 		doFlash = false;
-		const vector<const Sprite *> &flashSprites = GameData::JumpFlashSprites();
-		flashSprite = flashSprites.empty() ? nullptr : flashSprites[Random::Int(flashSprites.size())];
+		flashSprite = nextFlashSprite;
+		PrepareNextFlash();
 	}
 	else if(flash)
 		flash = max(0., flash * .99 - .002);
@@ -1454,6 +1456,31 @@ void Engine::BreakTargeting(const Government *gov)
 			|| (projectileGov == gov && targetGov == playerGov))
 			projectile.BreakTarget();
 	}
+}
+
+
+
+// Pick the image for the next hyperspace arrival flash and start loading it,
+// so that it is ready by the time the player arrives. Images come from "jump
+// flash" data nodes and from any plugin's "images/jump flash/" folder.
+void Engine::PrepareNextFlash()
+{
+	if(!hasFoundFlashSprites)
+	{
+		hasFoundFlashSprites = true;
+		flashSprites = GameData::JumpFlashSprites();
+		const vector<const Sprite *> folderSprites = SpriteLoadManager::JumpFlashSprites();
+		flashSprites.insert(flashSprites.end(), folderSprites.begin(), folderSprites.end());
+	}
+	if(flashSprites.empty())
+		return;
+
+	// Avoid showing the same image twice in a row.
+	const Sprite *previous = nextFlashSprite;
+	do {
+		nextFlashSprite = flashSprites[Random::Int(flashSprites.size())];
+	} while(flashSprites.size() > 1 && nextFlashSprite == previous);
+	SpriteLoadManager::LoadDeferred(asyncQueue, nextFlashSprite);
 }
 
 

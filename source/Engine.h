@@ -191,6 +191,8 @@ private:
 
 private:
 	void EnterSystem();
+	// Pick the image for the next hyperspace arrival flash and start loading it.
+	void PrepareNextFlash();
 
 	void CalculateStep();
 	// Calculate things that require the engine not to be paused.
@@ -306,8 +308,12 @@ private:
 	int nukeAlarmTime = 0;
 	double flash = 0.;
 	bool doFlash = false;
-	// An image to show in the flash instead of plain white, if plugins provide any.
+	// An image to show in the flash instead of plain white, if plugins provide any,
+	// and the one to show on the next arrival, which is loaded ahead of time.
 	const Sprite *flashSprite = nullptr;
+	const Sprite *nextFlashSprite = nullptr;
+	std::vector<const Sprite *> flashSprites;
+	bool hasFoundFlashSprites = false;
 	bool doEnterLabels = false;
 	bool doEnter = false;
 	bool hadHostiles = false;

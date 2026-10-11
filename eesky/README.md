@@ -58,15 +58,16 @@ These exist only in this fork, not upstream Endless Sky:
 - **Play statistics** as `stat: ...` conditions (trades, combat, travel, missions, conversation choices, and more). The full list is in the design doc under "Implemented so far". For example, `branch fighter` + `"stat: destroyed" >= 10` lets a conversation react to how someone plays, and `&[stat: destroyed]` prints the number in text.
 - **`on hail` NPC trigger.** In a mission's `npc` block, `on hail` runs its actions (usually a `conversation`) when the player hails one of that NPC's ships, instead of the normal hail panel. It runs once; later hails get the normal panel. Pair it with an `on encounter` `message` that tells the player to hail. See `The Grey Ship` in `plugins/eesky-philosopher/data/eesky stranger.txt`.
 
-- **`jump flash` images.** A top-level `"jump flash"` node lists images for the flash shown on arriving in a system. Each jump picks one at random and draws it over the screen, scaled to cover it, with the same strength and fade as the normal white flash (about a second). Images from every plugin are pooled; with none, the flash stays white. It only appears when "Show hyperspace flash" is on in Preferences, which is off by default. Image paths are relative to a plugin's `images/` folder:
+- **Jump flash images.** The flash shown on arriving in a system can show a random image instead of plain white, at the same strength and fade (about a second), scaled to cover the screen. It only appears when "Show hyperspace flash" is on in Preferences, which is off by default. Images come from two places, pooled across all plugins:
+  - **Any image in a plugin's `images/jump flash/` folder** (including subfolders), found automatically. These load on demand: only the previous, current and next image are kept in memory, and the next one loads in the background after each jump, so a plugin can hold hundreds. See the separate `endless-sky-jump-flash` plugin repo for a ready-made one.
+  - **A `"jump flash"` data node** listing sprites by name, for images that live elsewhere:
 
-  ```
-  "jump flash"
-  	sprite "flash/aurora"
-  	sprite "flash/nebula"
-  ```
+    ```
+    "jump flash"
+    	sprite "flash/aurora"
+    ```
 
-  with the files at `images/flash/aurora.png` and `images/flash/nebula.png`.
+  Image names ending in `-`, `+`, `=`, `^` or `~` followed by digits are treated as animation frames, so name files like `photo_001.png`, not `photo-001.png`.
 
 ## Tests
 

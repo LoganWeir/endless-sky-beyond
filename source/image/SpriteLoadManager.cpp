@@ -22,7 +22,9 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "SpriteSet.h"
 #include "../TaskQueue.h"
 
+#include <algorithm>
 #include <atomic>
+#include <deque>
 #include <map>
 #include <queue>
 #include <set>
@@ -57,6 +59,10 @@ namespace {
 	// Scenes remain loaded for only one in-game day before they're culled, as they are not commonly requested.
 	// Most scenes are only ever used in a single conversation, for example.
 	set<const Sprite *> loadedScenes;
+	// Jump flash images are shown for about a second, so only the last few requested
+	// (the one fading out, the one showing, and the next one) are kept loaded.
+	const size_t JUMP_FLASH_LIMIT = 3;
+	deque<const Sprite *> loadedJumpFlashes;
 	// Missions and events can add new sprites to the player's current area that may need to be loaded.
 	// The code that makes these changes may not have access to the TaskQueue in UI, so they
 	// instead send a message to the SpriteLoadManager to tell the current Panel to recheck which
@@ -174,10 +180,11 @@ void SpriteLoadManager::PreventSpriteUpload()
 void SpriteLoadManager::FindDeferredFolders()
 {
 	// Landscape images are always deferred.
+	// Jump flash images are also always deferred, since plugins may supply hundreds.
 	if(Preferences::Has("Defer loading images"))
-		deferredFolders = {"land", "thumbnail", "outfit", "scene", "star", "planet"};
+		deferredFolders = {"land", "thumbnail", "outfit", "scene", "star", "planet", "jump flash"};
 	else
-		deferredFolders = {"land"};
+		deferredFolders = {"land", "jump flash"};
 }
 
 
@@ -236,6 +243,19 @@ void SpriteLoadManager::LoadDeferred(TaskQueue &queue, const Sprite *sprite)
 		LoadStellarObject(queue, sprite, image);
 	else if(name.starts_with("scene/"))
 		LoadScene(queue, sprite, image);
+	else if(name.starts_with("jump flash/"))
+		LoadJumpFlash(queue, sprite, image);
+}
+
+
+
+vector<const Sprite *> SpriteLoadManager::JumpFlashSprites()
+{
+	vector<const Sprite *> result;
+	for(const auto &it : deferred)
+		if(it.first->Name().starts_with("jump flash/"))
+			result.push_back(it.first);
+	return result;
 }
 
 
@@ -372,4 +392,20 @@ void SpriteLoadManager::LoadScene(TaskQueue &queue, const Sprite *sprite, const 
 		return;
 
 	LoadSprite(queue, image);
+}
+
+
+
+void SpriteLoadManager::LoadJumpFlash(TaskQueue &queue, const Sprite *sprite, const shared_ptr<ImageSet> &image)
+{
+	if(find(loadedJumpFlashes.begin(), loadedJumpFlashes.end(), sprite) != loadedJumpFlashes.end())
+		return;
+
+	loadedJumpFlashes.push_back(sprite);
+	LoadSprite(queue, image);
+	while(loadedJumpFlashes.size() > JUMP_FLASH_LIMIT)
+	{
+		UnloadSprite(queue, loadedJumpFlashes.front());
+		loadedJumpFlashes.pop_front();
+	}
 }

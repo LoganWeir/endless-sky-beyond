@@ -18,6 +18,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 class Drawable;
 class ImageSet;
@@ -47,6 +48,9 @@ public:
 	static void LoadDeferred(TaskQueue &queue, const Sprite *sprite);
 	// Cull old stellar objects and thumbnails that haven't been seen in a while.
 	static void CullOldImages(TaskQueue &queue);
+	// Get every image in an "images/jump flash/" folder, which the hyperspace
+	// arrival flash picks from. They use deferred loading.
+	static std::vector<const Sprite *> JumpFlashSprites();
 
 	// Changes can be made by missions or events that cause new assets to appear.
 	// When this happens, a class can signal to the SpriteLoadManager than a panel
@@ -67,4 +71,6 @@ private:
 	static void LoadThumbnail(TaskQueue &queue, const Sprite *sprite, const std::shared_ptr<ImageSet> &image);
 	// Load a starting scenario, conversation, or logbook scene.
 	static void LoadScene(TaskQueue &queue, const Sprite *sprite, const std::shared_ptr<ImageSet> &image);
+	// Load a jump flash image. Only the few most recently requested ones stay loaded.
+	static void LoadJumpFlash(TaskQueue &queue, const Sprite *sprite, const std::shared_ptr<ImageSet> &image);
 };
