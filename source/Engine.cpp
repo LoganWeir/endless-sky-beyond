@@ -630,9 +630,11 @@ void Engine::Step(bool isActive)
 		PrepareNextFlash();
 	if(doFlash)
 	{
-		flash = .4;
 		doFlash = false;
 		flashSprite = nextFlashSprite;
+		// An image flash starts a little weaker than the plain white one, so it
+		// is shorter, since the flash fades out from this value.
+		flash = (flashSprite && flashSprite->IsLoaded()) ? .3 : .4;
 		PrepareNextFlash();
 	}
 	else if(flash)
@@ -1255,11 +1257,11 @@ void Engine::Draw() const
 
 	if(flash)
 	{
-		// Plugins can replace the plain white flash with a random image,
-		// scaled to cover the screen and fading out the same way.
+		// Plugins can replace the plain white flash with a random image, scaled
+		// so that the whole image fits on the screen, fading out the same way.
 		if(flashSprite && flashSprite->IsLoaded() && flashSprite->Width() > 0.f && flashSprite->Height() > 0.f)
 		{
-			float zoom = max(Screen::Width() / flashSprite->Width(), Screen::Height() / flashSprite->Height());
+			float zoom = min(Screen::Width() / flashSprite->Width(), Screen::Height() / flashSprite->Height());
 			SpriteShader::Item item = SpriteShader::Prepare(flashSprite, Point(), zoom);
 			item.alpha = flash;
 			SpriteShader::Bind();
