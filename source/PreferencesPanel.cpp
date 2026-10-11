@@ -594,8 +594,54 @@ bool PreferencesPanel::ControllerButtonDown(SDL_GameControllerButton button)
 		EndEditing();
 		return true;
 	}
-	else
-		return Panel::ControllerButtonDown(button);
+
+	// Native controller navigation, so that this panel doesn't depend on steering
+	// the cursor: LB and RB switch tabs, the D-pad moves the highlighted row (up
+	// and down) and changes page (left and right), A activates the highlighted
+	// row, and X clears a key binding. Using the D-pad hides the cursor; moving
+	// the left stick brings it back, and then A clicks wherever it is again.
+	if(button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER || button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)
+	{
+		static const string TABS = "cspa";
+		size_t index = TABS.find(page);
+		if(index == string::npos)
+			index = 0;
+		const bool forward = (button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+		index = (index + (forward ? 1 : TABS.size() - 1)) % TABS.size();
+		return KeyDown(TABS[index], 0, Command(), true);
+	}
+
+	const bool hasList = (page == 'c' || page == 's' || page == 'p');
+	const bool hasPages = (page == 'c' || page == 's');
+	const bool isVertical = (button == SDL_CONTROLLER_BUTTON_DPAD_UP || button == SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+	const bool isHorizontal = (button == SDL_CONTROLLER_BUTTON_DPAD_LEFT
+		|| button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+	if((hasList && isVertical) || (hasPages && isHorizontal))
+	{
+		GamepadCursor::SetEnabled(false);
+		hover = -1;
+		hoverItem.clear();
+		if(button == SDL_CONTROLLER_BUTTON_DPAD_UP)
+			HandleUp();
+		else if(button == SDL_CONTROLLER_BUTTON_DPAD_DOWN)
+			HandleDown();
+		else
+			KeyDown(button == SDL_CONTROLLER_BUTTON_DPAD_LEFT ? 'r' : 'n', 0, Command(), true);
+		return true;
+	}
+
+	if(hasList && !GamepadCursor::Enabled())
+	{
+		if(button == SDL_CONTROLLER_BUTTON_A)
+		{
+			HandleConfirm();
+			return true;
+		}
+		if(button == SDL_CONTROLLER_BUTTON_X && page == 'c')
+			return KeyDown('x', 0, Command(), true);
+	}
+
+	return Panel::ControllerButtonDown(button);
 }
 
 
