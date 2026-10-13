@@ -18,6 +18,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "AI.h"
 #include "AlertLabel.h"
 #include "AmmoDisplay.h"
+#include "Arena.h"
 #include "AsteroidField.h"
 #include "shader/BatchDrawList.h"
 #include "Camera.h"
@@ -249,6 +250,7 @@ private:
 	std::vector<Ship *> hasTractorBeam;
 
 	AI ai;
+	Arena arena;
 
 	TaskQueue queue;
 	TaskQueue asyncQueue;

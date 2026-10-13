@@ -1955,6 +1955,19 @@ void Engine::CalculateUnpaused(const Ship *flagship, const System *playerSystem)
 	// Check for ship scanning.
 	for(const shared_ptr<Ship> &it : ships)
 		DoScanning(it);
+
+	// In an arena duel, a disabled or destroyed ship ends the round instead of
+	// the fight. Nothing else should learn of that defeat, especially the player,
+	// who would otherwise die when the flagship is destroyed.
+	if(arena.Step(player, ships))
+	{
+		projectiles.clear();
+		eventQueue.remove_if([this](const ShipEvent &event)
+		{
+			return (event.Type() & (ShipEvent::DISABLE | ShipEvent::DESTROY))
+				&& arena.IsDuelist(event.Target().get());
+		});
+	}
 }
 
 

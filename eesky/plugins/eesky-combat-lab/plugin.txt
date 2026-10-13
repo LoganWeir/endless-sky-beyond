@@ -1,0 +1,7 @@
+name "eesky-combat-lab"
+about "One-on-one practice duels that restart the moment either ship goes down. Pick a fight from the New Pilot screen. Generated from eesky/combat-lab/fights.txt."
+version "0.1.0"
+authors
+	"Logan Weir"
+tags
+	"combat"
