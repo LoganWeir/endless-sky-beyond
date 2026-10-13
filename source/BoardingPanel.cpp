@@ -26,6 +26,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "text/FontSet.h"
 #include "text/Format.h"
 #include "GameData.h"
+#include "gamepad/GamepadCursor.h"
 #include "Government.h"
 #include "Information.h"
 #include "Interface.h"
@@ -528,6 +529,12 @@ bool BoardingPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command,
 	}
 	else if(command.Has(Command::INFO))
 		GetUI().Push(new ShipInfoPanel(player));
+	else if(!key)
+	{
+		// A gamepad button bound to a flight command does nothing here. Let it
+		// fall through so the gamepad cursor and D-pad defaults can use it.
+		return false;
+	}
 
 	return true;
 }
@@ -586,6 +593,35 @@ bool BoardingPanel::Drag(double dx, double dy)
 bool BoardingPanel::Scroll(double dx, double dy)
 {
 	return Drag(0., dy * Preferences::ScrollSpeed());
+}
+
+
+
+// Without the cursor, the D-pad picks plunder, A takes it (or attacks during a
+// capture), Y attempts a capture, X defends, and B leaves.
+bool BoardingPanel::ControllerButtonDown(SDL_GameControllerButton button)
+{
+	if(button == SDL_CONTROLLER_BUTTON_DPAD_UP || button == SDL_CONTROLLER_BUTTON_DPAD_DOWN)
+	{
+		GamepadCursor::SetEnabled(false);
+		return KeyDown(button == SDL_CONTROLLER_BUTTON_DPAD_UP ? SDLK_UP : SDLK_DOWN, 0, Command(), true);
+	}
+	if(GamepadCursor::Enabled())
+		return false;
+
+	SDL_Keycode key = SDLK_UNKNOWN;
+	if(button == SDL_CONTROLLER_BUTTON_A)
+		key = isCapturing ? 'a' : 't';
+	else if(button == SDL_CONTROLLER_BUTTON_Y)
+		key = 'c';
+	else if(button == SDL_CONTROLLER_BUTTON_X)
+		key = 'D';
+	else if(button == SDL_CONTROLLER_BUTTON_B)
+		key = SDLK_ESCAPE;
+	else
+		return false;
+
+	return KeyDown(key, 0, Command(), true);
 }
 
 

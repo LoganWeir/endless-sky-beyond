@@ -52,6 +52,7 @@ protected:
 	virtual bool Hover(int x, int y) override;
 	virtual bool Drag(double dx, double dy) override;
 	virtual bool Scroll(double dx, double dy) override;
+	virtual bool ControllerButtonDown(SDL_GameControllerButton button) override;
 
 
 private:

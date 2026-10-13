@@ -20,6 +20,8 @@
 #   Buying and selling: hold the right trigger for x5 (like Shift), the left
 #   trigger for x20 (like Ctrl), or both for x100. On the trading board, the
 #   D-pad picks a commodity, then A buys it and B sells it.
+#   Boarding: the D-pad picks plunder and A takes it, Y attempts a capture,
+#   A attacks and X defends during a capture, and B leaves.
 
 "Land on planet / station" controller_button 0
 "Talk to selected ship" controller_button 1
