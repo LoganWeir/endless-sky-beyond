@@ -234,14 +234,17 @@ bool RadialSelectionPanel::ControllerAxis(SDL_GameControllerAxis axis, int posit
 			return true;
 		}
 	}
-	else if(axis == SDL_CONTROLLER_AXIS_LEFTX || axis == SDL_CONTROLLER_AXIS_LEFTY)
+	else if(axis == SDL_CONTROLLER_AXIS_LEFTX || axis == SDL_CONTROLLER_AXIS_LEFTY
+			|| axis == SDL_CONTROLLER_AXIS_RIGHTX || axis == SDL_CONTROLLER_AXIS_RIGHTY)
 	{
-		MoveCursor(m_position + GamePad::LeftStick() * m_radius / 32767);
-		return true;
-	}
-	else if(axis == SDL_CONTROLLER_AXIS_RIGHTX || axis == SDL_CONTROLLER_AXIS_RIGHTY)
-	{
-		MoveCursor(m_position + GamePad::RightStick() * m_radius / 32767);
+		// Either stick can point at an option. Follow whichever one is pushed
+		// further, so that small jitter from the resting stick (constant on the
+		// Steam Deck) doesn't snap the cursor back to the center every frame,
+		// which made the selection flicker on and off.
+		Point left = GamePad::LeftStick();
+		Point right = GamePad::RightStick();
+		Point stick = (left.LengthSquared() >= right.LengthSquared()) ? left : right;
+		MoveCursor(m_position + stick * m_radius / 32767);
 		return true;
 	}
 	return false;
