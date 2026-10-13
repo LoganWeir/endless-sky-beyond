@@ -1325,9 +1325,21 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 
 	// Record play statistics for the mission's lifecycle, keyed by where the
 	// mission was offered. Per-mission counts are kept in the conditions below.
+	// Invisible missions are mostly bookkeeping (message buoys, reminders) that
+	// fail or complete by design, so they are logged but not counted.
 	auto recordStat = [this, &player](const string &verb)
 	{
-		player.RecordStat(verb, LocationName(location), 1, StatLog::Entry().Add("mission", trueName));
+		StatLog::Entry extra;
+		extra.Add("mission", trueName)
+			.Add("visible", isVisible ? 1 : 0)
+			.Add("passengers", passengers)
+			.Add("cargo", cargoSize)
+			.Add("deadline", deadline ? 1 : 0)
+			.Add("payment", paymentApparent);
+		if(isVisible)
+			player.RecordStat(verb, LocationName(location), 1, extra);
+		else
+			player.LogStat(verb, LocationName(location), 1, extra);
 	};
 
 	// Fail and abort conditions get updated regardless of whether the action
@@ -1377,10 +1389,12 @@ bool Mission::Do(Trigger trigger, PlayerInfo &player, UI *ui, const shared_ptr<S
 		--player.Conditions()[trueName + ": active"];
 		++player.Conditions()[trueName + ": done"];
 		recordStat("mission completed");
-		if(passengers)
+		if(isVisible && passengers)
 			player.AddStat("passengers delivered", "", passengers);
-		if(cargoSize)
+		if(isVisible && cargoSize)
 			player.AddStat("mission cargo delivered", "", cargoSize);
+		if(isVisible && deadline)
+			player.AddStat("rush missions completed");
 	}
 	// Job board missions are "offered" every time they are listed, so only
 	// count offers from other locations.
