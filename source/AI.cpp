@@ -4589,7 +4589,8 @@ void AI::MovePlayer(Ship &ship, Command &activeCommands)
 	}
 	else if(activeCommands.Has(Command::TARGET))
 	{
-		// Find the "next" ship to target. Holding `Shift` will cycle through escorts.
+		// Find the "next" ship to target. Holding `Shift` will cycle through your
+		// fleet and friendly escorts instead.
 		shared_ptr<const Ship> target = ship.GetTargetShip();
 		// Whether the next eligible ship should be targeted.
 		bool selectNext = !target || !target->IsTargetable();
@@ -4598,8 +4599,10 @@ void AI::MovePlayer(Ship &ship, Command &activeCommands)
 			// Do not target yourself.
 			if(other.get() == &ship)
 				continue;
-			// The default behavior is to ignore your fleet and any friendly escorts.
-			bool isPlayer = other->IsYours() || (other->GetPersonality().IsEscort()
+			// The default behavior is to ignore your fleet. Friendly mission escorts
+			// stay in the default cycle too, since a gamepad has no Shift key and
+			// some missions (e.g. repairing a disabled convoy ship) need them.
+			bool isPlayer = other->IsYours() || (shift && other->GetPersonality().IsEscort()
 					&& !other->GetGovernment()->IsEnemy());
 			if(other == target)
 				selectNext = true;
