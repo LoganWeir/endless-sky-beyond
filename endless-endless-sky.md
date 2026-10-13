@@ -287,6 +287,9 @@ One repo for now:
 
 ## Roadmap
 
+The nightly mutation pipeline (agents, prompts, feedback loop) is being drafted in [`mutation-architecture.md`](mutation-architecture.md).
+
+
 - **Phase 0 (engine readiness):** make the game good at accepting data-only updates before building the agent. The `Stats::Record` helper with both sinks, the tier-A hooks from the list above, a few new mission triggers, and agent-friendly validation (every error names its file; optionally JSON output; validate one plugin against a given save). Then a hand-written "philosopher NPC" plugin that exercises it all. Done so far: stats helper and tier-A hooks, `on hail`, and `eesky/plugins/eesky-philosopher` (the Stranger's five-meeting arc and grey ship, six one-off locals, and a beggar), with conventions in `eesky/README.md`, `eesky/validate.sh` and integration tests.
 - **Phase 1:** the nightly agent: save-diff and JSONL ingest into SQLite, a profile model, one generated plugin per night validated with `-p`, and the feedback loop on mutation usage. Tier-B hooks as needed.
 - **Phase 2:** the Lua hook layer, which moves most mechanics to Tier 1.5.

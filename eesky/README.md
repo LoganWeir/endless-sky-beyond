@@ -6,6 +6,8 @@ Content and tooling for Endless Endless Sky, the self-mutating version of this f
 
 - `plugins/`: plugins written in the game's data language. Each folder is a normal Endless Sky plugin (`plugin.txt` plus `data/`).
 - `validate.sh`: parses the game data plus every plugin here and exits non-zero on any error. Run it after changing a plugin.
+- `pull.sh`: pulls `stats.jsonl` and the saves from the Steam Deck (or another `user@host`) into `~/eesky-data`, then runs `summarize.py`.
+- `summarize.py`: summarizes how the player plays, from the play log and the newest save (`--json` for machine-readable output). Invisible bookkeeping missions are left out.
 
 ## Installing the plugins
 
